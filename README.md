@@ -1,82 +1,477 @@
 # Community Task Management
 
-Topluluk uyeleri, gorevleri, etkinlikleri, konusmacilari, yararli linkleri ve bildirimleri yonetmek icin gelistirilmis React + Supabase tabanli bir yonetim panelidir. Uygulama Vite ile calisir, veri katmani Supabase tablolarina baglanir ve gorev/etkinlik atamalarinda e-posta bildirimi icin Supabase Edge Function uzerinden Resend kullanir.
+An integrated community operations platform for managing **people, tasks, projects, events, speakers, announcements, and automated communication** in one system.
 
-## Teknoloji Yigini
+Community Task Management was designed to manage the operational side of a technology community from a single platform. It brings together people, organizational structure, task management, project workflows, events, speakers, announcements, notifications, and communication automation.
 
-- React 18
-- TypeScript
-- Vite
-- React Router
-- Tailwind CSS
-- Supabase JS SDK
-- Framer Motion
-- Lucide React
-- Recharts
-- Resend e-posta servisi
+The platform can also work together with a separate email infrastructure, allowing operational actions in the community management system to trigger automated communication workflows.
 
-## Kurulum
+---
 
-```bash
-npm install
-npm run dev
-```
+## What is Community Task Management?
 
-Uygulama varsayilan olarak Vite gelistirme sunucusunda calisir:
+Community Task Management is more than a traditional task board.
+
+It is a **community operations and collaboration platform** that centralizes the day-to-day management of a technology community.
+
+The system provides a unified environment for managing:
+
+* Community members
+* Departments, areas, and projects
+* Tasks and assignments
+* Kanban workflows
+* Workload and task capacity
+* Events
+* Speakers
+* Announcements
+* Notifications
+* Personal member profiles
+* Useful resources
+* Automated email workflows
+* Community settings
+
+The main goal is to connect these different operational areas instead of managing each one as a separate tool.
+
+---
+
+# Core Features
+
+## Member Management
+
+Community members can be created, updated, searched, filtered, viewed, and removed from the management panel.
+
+Member records can contain information such as:
+
+* Name
+* Email
+* Phone
+* Company
+* Job title
+* Community title
+* Avatar
+* Birthday information
+
+Members can also be connected to tasks, events, departments, areas, and projects.
+
+The member management system provides a centralized view of the people involved in the community and their current responsibilities.
+
+---
+
+## Task Management
+
+The task management module works as a lightweight Jira-style operational workspace.
+
+Tasks can be:
+
+* Created
+* Assigned to members
+* Edited
+* Viewed in detail
+* Deleted
+* Moved between workflow states
+* Archived
+* Restored
+
+The system supports both **Kanban** and **Table** views.
+
+### Task Workflow
+
+Current task states include:
 
 ```text
-http://localhost:5173
+backlog
+started
+in_progress
+completed
+done
 ```
 
-Uretim paketi almak icin:
+Tasks can be moved between workflow states through the Kanban interface using drag and drop.
 
-```bash
-npm run build
+Each task can contain:
+
+* Title
+* Description
+* Assignee
+* Deadline
+* Point value
+* Image reference
+* Status
+* Completion information
+
+---
+
+## Workload and Task Capacity
+
+The task system does not only track whether a task is completed.
+
+It also tracks the **active workload of community members**.
+
+The system keeps count of active tasks assigned to each member and can prevent additional active assignments when the configured capacity is reached.
+
+This gives the community team visibility into:
+
+* Who is working on what
+* Which tasks belong to which people
+* How much active work each person has
+* Which members still have available capacity
+* Which tasks are waiting for an assignee
+
+This turns the task module into a simple workload management layer rather than a basic checklist.
+
+---
+
+## Task Archive
+
+Completed or manually archived tasks can be moved into a separate archive.
+
+The archive supports:
+
+* Paginated task history
+* Task detail inspection
+* Restoring archived tasks back into the workflow
+
+This keeps the active workspace focused while preserving previous work.
+
+---
+
+# Organization Structure
+
+Community Task Management also provides an organizational structure for the community.
+
+The current hierarchy is designed around:
+
+```text
+Community
+    |
+    +-- Departments
+          |
+          +-- Areas
+                |
+                +-- Projects
 ```
 
-Derlenen paketi lokal onizlemek icin:
+This structure makes it possible to organize people and work according to the actual organization of the community.
 
-```bash
-npm run preview
+Instead of treating every task as an isolated item, tasks and projects can exist within a larger organizational context.
+
+---
+
+# Projects
+
+Projects provide a higher-level structure for community work.
+
+They can be associated with organizational areas and used to group related activities and responsibilities.
+
+The project structure is intended to make it easier to understand:
+
+* Which work belongs to which project
+* Which area owns a project
+* Which people are involved
+* Which tasks are associated with the work
+
+Project-level member and workspace capabilities are part of the application's ongoing development.
+
+---
+
+# Event Management
+
+Events can be created and managed directly through the platform.
+
+Supported operations include:
+
+* Event creation
+* Event editing
+* Event deletion
+* Event search
+* Event type filtering
+* Upcoming event queries
+* Past event queries
+* Staff assignment
+* Speaker assignment
+* Staff count tracking
+* Speaker count tracking
+
+An event can contain:
+
+* Title
+* Description
+* Event type
+* Start date
+* End date
+* Location
+* Drive link
+
+Events therefore become operational hubs that connect the event itself with the members and speakers responsible for it.
+
+---
+
+# Speaker Management
+
+The platform includes a dedicated speaker management system.
+
+Speaker records can contain:
+
+* Full name
+* Title
+* Company
+* Email
+* Phone
+* Image
+* Description
+* Status
+* Added-by information
+
+Speakers can be assigned to events and managed independently from regular community members.
+
+This allows the platform to manage both:
+
+* Internal community members
+* External event speakers
+
+within the same operational environment.
+
+---
+
+# Announcements
+
+The platform includes an announcements module for community communication.
+
+Announcements can be used for:
+
+* General community updates
+* Member-specific communication
+* Operational announcements
+* Internal information sharing
+
+This provides a central place for managing communication that does not belong to a specific task or event.
+
+---
+
+# Notifications and Realtime Updates
+
+The application includes an integrated notification system.
+
+Current capabilities include:
+
+* Notification listing
+* Unread notification count
+* Mark as read
+* Mark all as read
+* Notification deletion
+* Realtime notification updates through Supabase
+* Birthday-related checks
+
+Realtime subscriptions allow new notifications to appear without requiring users to manually refresh the application.
+
+---
+
+# Personal Member Profiles
+
+The application also includes a token-based member profile experience.
+
+Members can access a dedicated read-only profile page through a generated profile link.
+
+Example:
+
+```text
+/profile/<token>
 ```
 
-## Ortam Degiskenleri
+The profile can contain information such as:
 
-`.env.example` dosyasi temel degiskenleri gosterir. Lokal calisma icin `.env` veya `.env.local` dosyasi kullanilabilir.
+* Personal information
+* Assigned tasks
+* Organizational relationships
+* Department information
+* Announcements
+* Attachments
+* Event-related information
 
-```env
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-VITE_RESEND_API_KEY=
-VITE_EMAIL_FROM=
-VITE_APP_URL=
+The purpose of this feature is to provide each community member with a dedicated view of the information and work relevant to them.
+
+The member-facing experience is still an active area of development and can evolve into a richer personal workspace.
+
+---
+
+# Email Automation
+
+Community Task Management is designed to work together with a separate email infrastructure.
+
+The application can trigger communication as part of community workflows.
+
+Examples include:
+
+* Task assignment notifications
+* Event staff notifications
+* Speaker-related notifications
+* Community announcements
+* Other operational email workflows
+
+The repository also contains an `email-worker` service responsible for queue-based email processing.
+
+In the broader Orion Tech Community ecosystem, this responsibility is handled by the dedicated **Orion Team Mail Worker** application.
+
+The two systems separate community management from email delivery responsibilities:
+
+```text
+Community Task Management
+          |
+          | Business Events
+          v
+     Email Infrastructure
+          |
+          +-- Templates
+          +-- Queue
+          +-- Retry
+          +-- Delivery
+          +-- Logs
+          |
+          v
+        Brevo
 ```
 
-Not: Kod icinde Supabase ve Resend icin fallback degerler bulunuyor. Canli ortamda anahtarlarin sadece ortam degiskenlerinden okunmasi ve repoda acik anahtar tutulmamasi onerilir.
+This separation allows the community management application to focus on business operations while the mail infrastructure handles delivery and email operations.
 
-## Uygulama Rotalari
+---
 
-Rotalar `src/App.tsx` icinde tanimlidir.
+# Dashboard
 
-| Yol | Ekran | Aciklama |
-| --- | --- | --- |
-| `/` | `LoginScreen` | Giris ekrani |
-| `/dashboard` | `Dashboard` | KPI kartlari, gorev dagilimi, son uyeler ve son tamamlanan gorevler |
-| `/uyeler` | `MembersPage` | Uye listeleme, ekleme, guncelleme ve detay goruntuleme |
-| `/dogum-gunleri` | `BirthdaysPage` | Yaklasan dogum gunleri |
-| `/gorev-zinciri` | `TasksPage` | Gorev yonetimi |
-| `/linkler` | `LinksPage` | Kategorili yararli linkler |
-| `/konusmacilar` | `SpeakersPage` | Konusmaci havuzu |
-| `/etkinlikler` | `EventsPage` | Etkinlik, gorevli ve konusmaci atama yonetimi |
-| `/ayarlar` | `Dashboard` | Su anda dashboard'a yonleniyor |
+The main dashboard provides an overview of the current state of the community.
 
-## Klasor Yapisi
+Dashboard information includes:
+
+* Total members
+* Total speakers
+* Total events / announcements
+* Total tasks
+* Task completion rate
+* Task status distribution
+* Recently added members
+* Recently completed tasks
+
+Charts and summary cards provide a quick operational overview without requiring users to open every module separately.
+
+---
+
+# Useful Links
+
+The system includes a centralized useful-links module for shared community resources.
+
+Links can be:
+
+* Added
+* Updated
+* Deleted
+* Searched
+* Filtered by category
+* Grouped by category
+
+This provides a shared resource area for tools, documentation, platforms, references, and other frequently used links.
+
+---
+
+# Application Routes
+
+The main application routes include:
+
+| Path                                  | Screen             | Purpose                            |
+| ------------------------------------- | ------------------ | ---------------------------------- |
+| `/`                                   | Login              | Authentication entry point         |
+| `/dashboard`                          | Dashboard          | Community and operational overview |
+| `/uyeler`                             | Members            | Member management                  |
+| `/organizasyon/bolumler`              | Departments        | Organizational structure           |
+| `/organizasyon/bolum/:deptId/alanlar` | Areas              | Areas within a department          |
+| `/organizasyon/alan/:areaId/projeler` | Projects           | Projects within an area            |
+| `/dogum-gunleri`                      | Birthdays          | Birthday tracking                  |
+| `/gorev-zinciri`                      | Tasks              | Task management                    |
+| `/linkler`                            | Useful Links       | Shared resources                   |
+| `/konusmacilar`                       | Speakers           | Speaker management                 |
+| `/etkinlikler`                        | Events             | Event management                   |
+| `/duyurular`                          | Announcements      | Community announcements            |
+| `/profile/:token`                     | Member Profile     | Token-based read-only profile      |
+| `/topluluk-ayarlar`                   | Community Settings | Community configuration            |
+
+---
+
+# Technology Stack
+
+## Frontend
+
+* React 18
+* TypeScript
+* Vite
+* React Router
+* Tailwind CSS
+* Framer Motion
+* Lucide React
+* Recharts
+
+## Data Layer
+
+* Supabase
+* PostgreSQL
+* Supabase Auth
+* Supabase Realtime
+* Row Level Security
+
+## Email Infrastructure
+
+* Brevo
+* Email worker
+* Supabase-based integration
+
+## Runtime
+
+* Node.js
+* TypeScript
+* npm
+* Vite
+
+---
+
+# Architecture
+
+The main application is a React single-page application that uses Supabase as its primary data and authentication layer.
+
+```text
+                    Community Task Management
+                               |
+              +----------------+----------------+
+              |                                 |
+              v                                 v
+          React SPA                          Supabase
+              |                                 |
+              |                 +---------------+----------------+
+              |                 |               |                |
+              v                 v               v                v
+         React Router       Members / Tasks   Events / Org    Notifications
+              |
+              v
+       Operational UI
+              |
+              v
+       Email Integration
+              |
+              v
+        Email Worker
+              |
+              v
+            Brevo
+```
+
+The application is organized around domain-specific services and components so that members, tasks, events, speakers, notifications, and organizational structures can evolve independently.
+
+---
+
+# Project Structure
 
 ```text
 src/
   App.tsx
   main.tsx
   index.css
+
   components/
     dashboard/
     events/
@@ -88,261 +483,267 @@ src/
     speakers/
     tasks/
     ui/
+
   context/
   data/
   hooks/
   lib/
   pages/
   types/
+
 database/
-supabase/functions/
+  SQL schema and policy scripts
+
+email-worker/
+  Queue processing service
+  Worker
+  Template engine
+  Brevo integration
+  Supabase client
+
+supabase/
+  Supabase integration resources
+
+README.md
+TODO.md
+TODO-v2.md
+NOTIFICATION_PLAN.md
+package.json
+vercel.json
 ```
 
-Ana sorumluluklar:
+### Main Responsibilities
 
-- `src/pages`: Sayfa seviyesindeki ekranlar.
-- `src/components`: Tekrar kullanilabilir UI ve alan bazli bilesenler.
-- `src/lib`: Supabase servisleri ve e-posta yardimcilari.
-- `src/types`: Veritabani ve form tipleri.
-- `src/context`: Tema ve kullanici profili context'leri.
-- `database`: Supabase SQL tablo, enum, index, trigger ve RLS scriptleri.
-- `supabase/functions`: Edge Function kaynaklari.
+* `src/pages` — Page-level application screens
+* `src/components` — Reusable and domain-specific UI components
+* `src/lib` — Supabase services, email helpers, and business-related client logic
+* `src/types` — Domain and database-facing TypeScript types
+* `src/context` — Shared application contexts such as theme and user profile state
+* `database` — SQL schema, indexes, triggers, and RLS policies
+* `email-worker` — Queue-based email processing service
 
-## Mimari Ozet
+---
 
-Uygulama istemci tarafinda calisan bir SPA'dir. React Router sayfa gecislerini yonetir. Her ana is alani icin `src/lib/supabase*.ts` dosyalarinda CRUD servisleri bulunur. Sayfalar ve modal bilesenleri bu servisleri kullanarak Supabase tablolarindan veri okur veya yazar.
+# Database
 
-Genel akis:
+The project contains database definitions and scripts for the main application domains.
 
-1. `main.tsx`, React uygulamasini DOM'a baglar.
-2. `App.tsx`, tema ve kullanici profili provider'larini sarar, rotalari tanimlar.
-3. `Layout`, sidebar, tema secici, bildirim ikonu ve profil butonunu ortak cerceve olarak sunar.
-4. Sayfalar kendi alan servislerini cagirir.
-5. Servisler Supabase istemcisi uzerinden tablo sorgularini yapar.
-6. Gorev veya etkinlik atamalarinda e-posta bildirimi arka planda tetiklenir.
+Logical database areas include:
 
-## Temel Moduller
+* Members
+* Tasks
+* Archived tasks
+* Speakers
+* Events
+* Event staff
+* Event speakers
+* Departments
+* Areas
+* Projects
+* Announcements
+* Notifications
+* Useful links
+* Profiles
+* Email templates
+* Email queues
 
-### Dashboard
+Some SQL files in the repository are corrective, reset, or historical variants. A future cleanup can consolidate these into a clearer migration strategy.
 
-`src/components/Dashboard.tsx` icinde bulunur. Asagidaki verileri toplar:
+---
 
-- toplam uye
-- toplam konusmaci
-- toplam etkinlik/duyuru
-- toplam gorev
-- gorev tamamlama orani
-- gorev durum dagilimi
-- son eklenen uyeler
-- son tamamlanan gorevler
+# Authentication and Access
 
-Veri kaynaklari agirlikli olarak `src/lib/supabaseTasks.ts`, `src/lib/supabaseMembers.ts` ve `src/lib/supabaseSpeakers.ts` dosyalaridir.
+The application uses **Supabase Auth** for authenticated application access.
 
-### Uye Yonetimi
+Task retrieval explicitly checks for an active authentication session.
 
-Ilgili dosyalar:
+The member profile page uses token-based access for its read-only member experience.
 
-- `src/components/members/MembersPage.tsx`
-- `src/components/members/MemberTable.tsx`
-- `src/components/members/MemberModal.tsx`
-- `src/lib/supabaseMembers.ts`
-- `src/types/member.ts`
-- `database/members.sql`
+For production usage, application authentication and database-level Row Level Security policies should remain aligned so that access rules are consistently enforced.
 
-Desteklenen islemler:
+---
 
-- uye listeleme ve arama
-- role ve topluluk unvanina gore filtreleme
-- uye ekleme, guncelleme, silme
-- dogum gunu hesaplama
-- gorev kapasitesi kontrolu
+# Local Development
 
-Her uye icin `total_tasks` en fazla 3 olacak sekilde tasarlanmistir. `active_tasks`, aktif gorev sayisini temsil eder.
+## Requirements
 
-### Gorev Yonetimi
+* Node.js
+* npm
+* Supabase project
 
-Ilgili dosyalar:
+## Installation
 
-- `src/pages/TasksPage.tsx`
-- `src/components/tasks/TaskTable.tsx`
-- `src/components/tasks/TaskFormModal.tsx`
-- `src/components/tasks/TaskDetailsModal.tsx`
-- `src/components/kanban/KanbanBoard.tsx`
-- `src/lib/supabaseTasks.ts`
-- `src/types/task.ts`
-- `database/tasks.sql`
+```bash
+git clone https://github.com/DevCodexa/community-task-management.git
+cd community-task-management
+npm install
+```
 
-Gorev durumlari:
+## Start Development Server
 
-- `backlog`
-- `started`
-- `in_progress`
-- `completed`
-- `done`
+```bash
+npm run dev
+```
 
-Onemli is kurallari:
-
-- Baslik zorunludur ve en az 2 karakter olmalidir.
-- Puan 0-100 araligindadir.
-- Atanan uye gorev kapasitesini asmamalidir.
-- `started` ve `in_progress` aktif gorev kabul edilir.
-- Gorev tamamlandiginda veya aktiflikten ciktiginda uyenin aktif gorev sayisi azaltilebilir.
-- Gorev atandiginda e-posta bildirimi arka planda gonderilmeye calisilir.
-
-### Etkinlik Yonetimi
-
-Ilgili dosyalar:
-
-- `src/pages/EventsPage.tsx`
-- `src/components/events/EventTable.tsx`
-- `src/components/events/EventFormModal.tsx`
-- `src/lib/supabaseEvents.ts`
-- `src/types/event.ts`
-- `database/events.sql`
-
-Desteklenen islemler:
-
-- etkinlik listeleme, arama ve tur filtreleme
-- etkinlik olusturma, guncelleme, silme
-- etkinlige gorevli uye atama
-- etkinlige konusmaci atama
-- gorevli ve konusmaci sayilarini hesaplama
-- yaklasan/gecmis etkinlik sorgulari
-
-Atama tablolari:
-
-- `event_staff`: etkinlik-uye iliskisi
-- `event_speakers`: etkinlik-konusmaci iliskisi
-
-Etkinlige gorevli veya konusmaci eklendiginde e-posta bildirimi arka planda tetiklenir.
-
-### Konusmacilar
-
-Ilgili dosyalar:
-
-- `src/pages/SpeakersPage.tsx`
-- `src/components/speakers/SpeakerTable.tsx`
-- `src/components/speakers/SpeakerModal.tsx`
-- `src/components/speakers/SpeakerDetailModal.tsx`
-- `src/lib/supabaseSpeakers.ts`
-- `src/types/speaker.ts`
-- `database/speakers.sql`
-
-Konusmaci kaydi; ad soyad, unvan, sirket, e-posta, telefon, gorsel, aciklama, durum ve ekleyen uye alanlarini icerir. Durum alanlari `green`, `red`, `neutral` olarak kullanilir.
-
-### Yararli Linkler
-
-Ilgili dosyalar:
-
-- `src/pages/LinksPage.tsx`
-- `src/components/links/LinkFormModal.tsx`
-- `src/lib/supabaseUsefulLinks.ts`
-- `database/useful_links.sql`
-
-Desteklenen islemler:
-
-- link listeleme
-- kategoriye gore gruplama
-- basliga gore arama
-- kategori filtreleme
-- link ekleme, guncelleme, silme
-
-URL alanlari `http://` veya `https://` ile baslamalidir.
-
-### Bildirimler
-
-Ilgili dosyalar:
-
-- `src/hooks/useNotifications.ts`
-- `src/components/notifications/*`
-- `src/lib/supabaseNotifications.ts`
-- `src/types/notification.ts`
-- `database/notifications.sql`
-
-Desteklenen islemler:
-
-- bildirim listeleme
-- okunmamis sayisi
-- okundu isaretleme
-- tumunu okundu isaretleme
-- okunanlari veya tum bildirimleri silme
-- Supabase realtime INSERT aboneligi
-- uygulama acilisinda dogum gunu kontrolu icin `check_birthdays_today` RPC cagrisi
-
-### Tema ve Layout
-
-`ThemeContext` tema secimini yonetir. `Layout`, uygulama cercevesini, sidebar'i, ust bar'i, bildirim konteynerini ve profil butonunu sunar.
-
-Mevcut tema secenekleri:
-
-- `dark`
-- `blueMor`
-- `iceBlue`
-
-## Veritabani
-
-SQL scriptleri `database/` altindadir. Temel kurulum sirasi genellikle soyledir:
-
-1. `members.sql`
-2. `tasks.sql`
-3. `speakers.sql`
-4. `events.sql`
-5. `useful_links.sql`
-6. `notifications.sql`
-
-Bazi dosyalar alternatif veya duzeltme scriptleri gibi gorunuyor:
-
-- `events-fixed.sql`
-- `events-full-reset.sql`
-- `events-security-fix.sql`
-- `events-simple-final.sql`
-- `speakers-rls-fix.sql`
-
-Canli ortamda hangi SQL dosyasinin guncel kaynak kabul edildigi netlestirilmeli ve eski reset/fix scriptleri ayrica isimlendirilmelidir.
-
-## E-posta Bildirimleri
-
-E-posta akisinda istemci kodu `src/lib/resend.ts` dosyasini kullanir. Bu dosya dogrudan Resend API'sine gitmek yerine Supabase Edge Function endpoint'ine istek atar:
+The development server normally runs at:
 
 ```text
-{VITE_SUPABASE_URL}/functions/v1/resend-email
+http://localhost:5173
 ```
 
-Edge Function kaynaklari:
+## Build
 
-- `supabase/functions/resend-email/index.ts`
-- `supabase/functions/_shared/cors.ts`
+```bash
+npm run build
+```
 
-E-posta tetiklenen senaryolar:
+## Preview
 
-- gorev atamasi
-- etkinlige gorevli ekleme
-- etkinlige konusmaci ekleme
+```bash
+npm run preview
+```
 
-## Guvenlik ve Dikkat Edilecek Noktalar
+---
 
-- `src/lib/supabase.ts`, `.env.example` ve `src/lib/resend.ts` icinde gercek anahtar gibi gorunen fallback degerler bulunuyor. Bunlar repodan kaldirilmali, sadece ortam degiskenleri kullanilmali.
-- Bazi SQL dosyalarinda RLS gelistirme kolayligi icin anon role'a genis CRUD yetkisi veriyor veya RLS kapatiliyor. Canli ortam icin rol bazli politikalar tekrar tasarlanmalidir.
-- `src/lib/supabaseTasks.ts` icindeki `ensureAuth`, gorev listelemede Supabase session isterken diger servislerin cogu anon erisim varsayiyor. Kimlik dogrulama modeli tutarli hale getirilmeli.
-- E-posta HTML icerikleri istemci tarafinda uretiliyor. Daha guvenli ve yonetilebilir bir yapi icin template uretimi Edge Function veya backend tarafina alinabilir.
-- `database/events.sql` icindeki `event_type_enum` satiri sozdizimi acisindan kontrol edilmeli; enum degerleri arasinda eksik virgul gorunuyor.
-- Kodda debug amacli `console.log` ve `console.warn` kullanimlari yaygin. Uretim ortaminda azaltilmasi onerilir.
-- `node_modules/` git tarafindan izlenmeyen dosya olarak gorunuyor. `.gitignore` dosyasi kontrol edilmeli veya eklenmelidir.
+# Environment Variables
 
-## Gelistirme Notlari
+A typical frontend configuration includes:
 
-- UI tarafinda Tailwind utility class'lari ve CSS degiskenleri birlikte kullaniliyor.
-- Bilesenler alan bazli klasorlenmis durumda; yeni bir modul eklenirken `types`, `lib`, `pages/components` ayrimini korumak daha okunabilir olur.
-- Servis fonksiyonlari hata yakalayip kullaniciya daha anlamli mesaj dondurmeye calisiyor.
-- Sayfalama servis seviyesinde standart olarak `page`, `limit`, `total`, `totalPages`, `hasNext`, `hasPrev` alanlariyla donuyor.
-- Tarih gosterimlerinde Turkce locale (`tr-TR`) kullaniliyor.
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_APP_URL=
+```
 
-## Onerilen Sonraki Iyilestirmeler
+Additional email-related configuration depends on the deployed email infrastructure.
 
-1. Gizli anahtarlar repodan temizlenmeli ve Supabase/Resend anahtarlari rotate edilmeli.
-2. `.gitignore` eklenerek `node_modules`, `dist`, `.env`, `.env.local` gibi dosyalar izleme disinda tutulmali.
-3. SQL scriptleri tek bir guncel migration akisina toparlanmali.
-4. RLS politikalari canli kullanima uygun hale getirilmeli.
-5. Auth akisinin hangi sayfalari koruyacagi netlestirilmeli.
-6. Unit/integration test altyapisi eklenmeli.
-7. TypeScript strict kontrolleri ve lint/format scriptleri eklenmeli.
+Secrets and service credentials should be provided through environment variables or secure secret storage rather than committed to source control.
+
+---
+
+# Email Worker
+
+The repository contains a dedicated `email-worker` service for scheduled email processing.
+
+Its responsibilities include:
+
+* Loading email settings
+* Reading queued email jobs
+* Resolving active templates
+* Rendering template parameters
+* Sending messages through Brevo
+* Applying retry limits
+* Respecting daily sending limits
+* Recording delivery results
+
+The worker starts by processing the queue and then schedules recurring processing every five minutes.
+
+The dedicated **Orion Team Mail Worker** application expands this concept into a full email operations platform with:
+
+* Manual email sending
+* Recipient selection
+* Template management
+* Queue management
+* Retry handling
+* Daily sending limits
+* Delivery logs
+* Sender settings
+* Email previews
+
+---
+
+# Development Status
+
+The project is in active development.
+
+The core community-management functionality is already implemented across several domains:
+
+* Member management
+* Task management
+* Kanban workflow
+* Workload controls
+* Task archive and restore
+* Event management
+* Speaker management
+* Organizational hierarchy
+* Projects
+* Announcements
+* Notifications
+* Useful links
+* Token-based member profiles
+* Email workflow integration
+
+The member-facing workspace remains an area for further development, with room for richer personal dashboards, project views, task history, and role-specific functionality.
+
+---
+
+# Security and Maintenance Notes
+
+Before production hardening, the following areas should be reviewed:
+
+* Remove any real API keys or fallback credentials from source code.
+* Store secrets only in environment variables or secure secret storage.
+* Ensure Row Level Security policies match the intended production roles.
+* Consolidate historical SQL fixes and reset scripts into a clear migration strategy.
+* Review authentication consistency across all data services.
+* Add automated tests for critical task, event, profile, and email workflows.
+* Keep generated build output and dependency directories out of source control where appropriate.
+* Replace development-only logging with structured application logging where needed.
+
+---
+
+# Roadmap
+
+Potential future improvements include:
+
+* Richer member self-service dashboards
+* Personal task and project views
+* Project-level progress tracking
+* More granular roles and permissions
+* Advanced workload analytics
+* More event-driven automation
+* Expanded email workflow integrations
+* Centralized backend/API boundaries
+* Automated test coverage
+* Monitoring and observability
+* Richer member-specific workspaces
+
+---
+
+# Orion Tech Community
+
+Community Task Management is part of the broader **Orion Tech Community** technical ecosystem.
+
+Together with the email infrastructure, it provides a connected foundation for operating a technology community:
+
+```text
+People
+   +
+Organization
+   +
+Projects
+   +
+Tasks
+   +
+Events
+   +
+Speakers
+   +
+Announcements
+   +
+Automation
+   +
+Communication
+        =
+Community Operations Platform
+```
+
+The long-term goal is to provide a single operational environment where community management, collaboration, events, responsibilities, and communication can work together rather than being handled through disconnected tools.
+
+---
+
+## Project Status
+
+**Active Development**
+
+Community Task Management is evolving from a task-focused management dashboard into a broader community operations platform while retaining its original task and collaboration capabilities.
