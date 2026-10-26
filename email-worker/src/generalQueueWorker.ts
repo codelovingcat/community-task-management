@@ -78,6 +78,34 @@ function buildPayload(settings: EmailSettings, item: GeneralQueueItem, template:
   return base;
 }
 
+
+async function reconcileBirthdayDeliveryMarkers(): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
+    .from('email_queue')
+    .select('id, template_code, template_params')
+    .eq('status', 'sent')
+    .in('template_code', ['birthday_personal', 'birthday_team'])
+    .order('sent_at', { ascending: false })
+    .limit(500);
+  if (error) throw new Error(error.message);
+
+  for (const row of (data ?? []) as unknown as Array<{id: number; template_code: string; template_params: Record<string, unknown> | null}>) {
+    const params = row.template_params ?? {};
+    const personId = typeof params.birthday_person_id === 'string' ? params.birthday_person_id : '';
+    const year = Number(params.birthday_year);
+    const channel = row.template_code === 'birthday_personal' ? 'personal' : 'team';
+    if (!personId || !Number.isInteger(year)) continue;
+    const { error: recordError } = await supabase.rpc('record_birthday_email_delivery', {
+      p_queue_id: row.id,
+      p_birthday_person_id: personId,
+      p_notification_year: year,
+      p_channel: channel
+    });
+    if (recordError) log('Could not reconcile birthday delivery marker for queue #' + row.id + ': ' + recordError.message);
+  }
+}
+
 async function fetchPending(settings: EmailSettings, limit: number): Promise<GeneralQueueItem[]> {
   const { data, error } = await getSupabaseClient()
     .from('email_queue')
@@ -94,6 +122,16 @@ async function fetchPending(settings: EmailSettings, limit: number): Promise<Gen
 
 export async function processGeneralEmailQueue(): Promise<void> {
   const supabase = getSupabaseClient();
+
+  // The worker is the daily scheduler for birthday enqueueing. The SQL function is idempotent.
+  const { error: birthdayEnqueueError } = await supabase.rpc('enqueue_birthday_emails', { p_personal_only: false });
+  if (birthdayEnqueueError) log('Birthday enqueue failed: ' + birthdayEnqueueError.message);
+  try {
+    await reconcileBirthdayDeliveryMarkers();
+  } catch (error) {
+    log('Birthday delivery reconciliation failed: ' + String(error));
+  }
+
   const settings = await loadEmailSettings();
   if (!settings.enabled) return;
 
@@ -196,6 +234,19 @@ export async function processGeneralEmailQueue(): Promise<void> {
       brevo_message_id: messageId,
       error_message: null
     });
+
+    const birthdayPersonId = typeof params.birthday_person_id === 'string' ? params.birthday_person_id : '';
+    const birthdayYear = Number(params.birthday_year);
+    if (birthdayPersonId && Number.isInteger(birthdayYear) && (item.template_code === 'birthday_personal' || item.template_code === 'birthday_team')) {
+      const { error: markerError } = await supabase.rpc('record_birthday_email_delivery', {
+        p_queue_id: item.id,
+        p_birthday_person_id: birthdayPersonId,
+        p_notification_year: birthdayYear,
+        p_channel: item.template_code === 'birthday_personal' ? 'personal' : 'team'
+      });
+      if (markerError) log('Delivery succeeded but birthday marker failed for queue #' + item.id + ': ' + markerError.message);
+    }
+
     sent += 1;
     try {
       await insertLog(item, 'sent', { attempt, messageId });
