@@ -47,7 +47,7 @@ async function updateQueue(id: number, values: Record<string, unknown>): Promise
 
 function missingTemplateParams(source: string, params: Record<string, string>): string[] {
   const names = new Set<string>();
-  const pattern = /{{\\s*([^}]+?)\\s*}}/g;
+  const pattern = /{{\s*([^}]+?)\s*}}/g;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(source)) !== null) {
     const name = match[1].trim();
