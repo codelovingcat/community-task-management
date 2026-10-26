@@ -2,7 +2,7 @@
    useNotifications Hook - Zincir Atarlı Task Management
    =========================================================== */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FullNotification,
   NotificationQueryParams,
@@ -93,7 +93,14 @@ export const useNotifications = (
           ...params,
         });
 
-        setNotifications(response.data);
+        response.data.forEach((notification) => seenNotificationIds.current.add(notification.id));
+        setNotifications((prev) => {
+          const byId = new Map<string, FullNotification>();
+          [...response.data, ...prev].forEach((notification) => byId.set(notification.id, notification));
+          return Array.from(byId.values()).sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        });
       } catch (err: any) {
         setError(err.message || 'Bildirimler yüklenirken hata oluştu');
         console.error('Fetch notifications error:', err);
