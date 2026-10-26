@@ -95,7 +95,6 @@ export interface Database {
         Returns: undefined;
       };
 
+    };
   };
 }
-
-
