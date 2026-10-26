@@ -16,18 +16,29 @@ process.on('uncaughtException', (err: Error) => {
   logRaw('uncaughtException: ' + err.message);
 });
 
-async function processAllQueues(): Promise<void> {
-  // Keep speaker queue failures isolated from general transactional mail.
-  try {
-    await processEmailQueue();
-  } catch (error) {
-    logRaw('speaker queue error: ' + (error instanceof Error ? error.message : String(error)));
-  }
+let processing = false;
 
+async function processAllQueues(): Promise<void> {
+  if (processing) {
+    logRaw('Previous queue cycle is still running; overlapping cycle skipped.');
+    return;
+  }
+  processing = true;
   try {
-    await processGeneralEmailQueue();
-  } catch (error) {
-    logRaw('general queue error: ' + (error instanceof Error ? error.message : String(error)));
+    // Keep speaker queue failures isolated from general transactional mail.
+    try {
+      await processEmailQueue();
+    } catch (error) {
+      logRaw('speaker queue error: ' + (error instanceof Error ? error.message : String(error)));
+    }
+
+    try {
+      await processGeneralEmailQueue();
+    } catch (error) {
+      logRaw('general queue error: ' + (error instanceof Error ? error.message : String(error)));
+    }
+  } finally {
+    processing = false;
   }
 }
 
