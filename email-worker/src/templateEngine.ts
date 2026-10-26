@@ -23,7 +23,7 @@ export function normalizeTemplateParams(params: Record<string, unknown>): Record
   // Ensures Record<string,string> (Supabase jsonb may come as any/unknown)
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(params ?? {})) {
-    out[k] = typeof v === 'string' ? v : String(v);
+    out[k] = v == null ? '' : typeof v === 'string' ? v : String(v);
   }
   return out;
 }
