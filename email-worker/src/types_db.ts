@@ -4,6 +4,25 @@
 export interface Database {
   public: {
     Tables: {
+      email_queue: {
+        Row: {
+          id: number;
+          recipient_email: string;
+          recipient_name: string | null;
+          template_code: string;
+          template_params: Record<string, unknown>;
+          priority: 'low' | 'medium' | 'high';
+          status: 'pending' | 'sent' | 'failed';
+          attempt_count: number;
+          last_attempt_at: string | null;
+          next_attempt_at: string;
+          sent_at: string | null;
+          error_message: string | null;
+          brevo_message_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+      };
       speaker_email_queue: {
         Row: {
           id: string;
@@ -49,7 +68,8 @@ export interface Database {
       email_send_logs: {
         Row: {
           id: number;
-          queue_id: number;
+          queue_id: number | null;
+          speaker_queue_id: string | null;
           recipient_email: string;
           template_code: string;
           event_type: string;
