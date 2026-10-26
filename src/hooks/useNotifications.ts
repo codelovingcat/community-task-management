@@ -74,6 +74,7 @@ export const useNotifications = (
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats] = useState<NotificationStats | null>(null);
+  const seenNotificationIds = useRef<Set<string>>(new Set());
 
   // Real-time unsubscribe function
   const [unsubscribe, setUnsubscribe] = useState<(() => void) | null>(null);
@@ -131,16 +132,13 @@ export const useNotifications = (
   const handleMarkAsRead = useCallback(
     async (id: string) => {
       try {
+        const existing = notifications.find((notification) => notification.id === id);
+        if (!existing || existing.is_read) return;
         await markAsRead(id);
 
-        // Update local state
         setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === id ? { ...n, is_read: true } : n
-          )
+          prev.map((n) => n.id === id ? { ...n, is_read: true, read_at: new Date().toISOString() } : n)
         );
-
-        // Decrease unread count
         setUnreadCount((prev) => Math.max(0, prev - 1));
       } catch (err: any) {
         setError(err.message || 'Bildirim okundu işaretlenirken hata oluştu');
@@ -202,15 +200,12 @@ export const useNotifications = (
   useEffect(() => {
     if (!enableRealtime) return;
 
-    // Define callback for new notifications
+    // A realtime INSERT can race the initial SELECT. Deduplicate by stable database ID.
     const callback: RealtimeNotificationCallback = (notification) => {
-      // Add new notification to the beginning of the list
-      setNotifications((prev) => [notification, ...prev]);
-
-      // Increment unread count for unread notifications
-      if (!notification.is_read) {
-        setUnreadCount((prev) => prev + 1);
-      }
+      if (seenNotificationIds.current.has(notification.id)) return;
+      seenNotificationIds.current.add(notification.id);
+      setNotifications((prev) => [notification, ...prev.filter((item) => item.id !== notification.id)]);
+      if (!notification.is_read) setUnreadCount((prev) => prev + 1);
     };
 
     // Subscribe to real-time notifications
