@@ -95,10 +95,14 @@ export const useNotifications = (
         });
 
         response.data.forEach((notification) => seenNotificationIds.current.add(notification.id));
+        const newestFetchedAt = response.data[0]?.created_at;
         setNotifications((prev) => {
-          const byId = new Map<string, FullNotification>();
-          [...response.data, ...prev].forEach((notification) => byId.set(notification.id, notification));
-          return Array.from(byId.values()).sort(
+          // Preserve only realtime events newer than the fetched page, not stale rows from prior fetches.
+          const realtimeOnly = prev.filter((notification) =>
+            !response.data.some((fetched) => fetched.id === notification.id) &&
+            (!newestFetchedAt || notification.created_at > newestFetchedAt)
+          );
+          return [...realtimeOnly, ...response.data].sort(
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           );
         });
