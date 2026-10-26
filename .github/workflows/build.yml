@@ -17,7 +17,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm test
+      - run: npm run build
 
   email-worker:
     name: Email worker TypeScript build
@@ -33,4 +33,4 @@ jobs:
           cache: npm
           cache-dependency-path: email-worker/package-lock.json
       - run: npm ci
-      - run: npm run build
+      - run: npm test
