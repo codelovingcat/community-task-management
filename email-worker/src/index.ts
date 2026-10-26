@@ -1,37 +1,43 @@
 import 'dotenv/config';
 import cron from 'node-cron';
 import { processEmailQueue } from './worker';
+import { processGeneralEmailQueue } from './generalQueueWorker';
 
 function logRaw(message: string): void {
-  // eslint-disable-next-line no-console
-  console.log(`[EmailWorker] ${message}`);
+  console.log('[EmailWorker] ' + message);
 }
 
 process.on('unhandledRejection', (reason: unknown) => {
   const msg = reason instanceof Error ? reason.message : String(reason);
-  logRaw(`unhandledRejection: ${msg}`);
+  logRaw('unhandledRejection: ' + msg);
 });
 
 process.on('uncaughtException', (err: Error) => {
-  logRaw(`uncaughtException: ${err.message}`);
+  logRaw('uncaughtException: ' + err.message);
 });
 
-async function start(): Promise<void> {
-  // eslint-disable-next-line no-console
-  console.log('[EmailWorker] Servis başlatıldı. Cron: her 5 dakikada bir.');
+async function processAllQueues(): Promise<void> {
+  // Keep speaker queue failures isolated from general transactional mail.
+  try {
+    await processEmailQueue();
+  } catch (error) {
+    logRaw('speaker queue error: ' + (error instanceof Error ? error.message : String(error)));
+  }
 
-  // Start immediately
-  await processEmailQueue();
+  try {
+    await processGeneralEmailQueue();
+  } catch (error) {
+    logRaw('general queue error: ' + (error instanceof Error ? error.message : String(error)));
+  }
+}
+
+async function start(): Promise<void> {
+  console.log('[EmailWorker] Servis başlatıldı. Cron: her 5 dakikada bir.');
+  await processAllQueues();
 
   cron.schedule('*/5 * * * *', async () => {
-    try {
-      await processEmailQueue();
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      logRaw(`processEmailQueue error: ${msg}`);
-    }
+    await processAllQueues();
   });
 }
 
 void start();
-
