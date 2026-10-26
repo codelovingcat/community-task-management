@@ -100,7 +100,7 @@ export const useNotifications = (
           // Preserve only realtime events newer than the fetched page, not stale rows from prior fetches.
           const realtimeOnly = prev.filter((notification) =>
             !response.data.some((fetched) => fetched.id === notification.id) &&
-            (!newestFetchedAt || notification.created_at > newestFetchedAt)
+            (!newestFetchedAt || new Date(notification.created_at).getTime() > new Date(newestFetchedAt).getTime())
           );
           return [...realtimeOnly, ...response.data].sort(
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
