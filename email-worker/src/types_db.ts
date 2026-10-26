@@ -78,7 +78,23 @@ export interface Database {
         };
       };
 
+
     };
+    Functions: {
+      enqueue_birthday_emails: {
+        Args: { p_personal_only?: boolean };
+        Returns: undefined;
+      };
+      record_birthday_email_delivery: {
+        Args: {
+          p_queue_id: number;
+          p_birthday_person_id: string;
+          p_notification_year: number;
+          p_channel: 'personal' | 'team';
+        };
+        Returns: undefined;
+      };
+
   };
 }
 
