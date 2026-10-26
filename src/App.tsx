@@ -18,6 +18,7 @@ import { AreasPage } from './pages/AreasPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import ProfilePage from './pages/ProfilePage'
 import { CommunitySettingsPage } from './pages/CommunitySettingsPage'
+import { NotificationsPage } from './pages/NotificationsPage'
 
 function App() {
 
@@ -31,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LoginScreen />} />
             <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/bildirimler" element={<Layout><NotificationsPage /></Layout>} />
             <Route path="/uyeler" element={<Layout><MembersPage /></Layout>} />
 
             <Route path="/organizasyon/bolumler" element={<Layout><DepartmentsPage /></Layout>} />
