@@ -123,10 +123,8 @@ async function insertSendLog(params: {
   eventType: 'sent' | 'failed';
   eventData: Record<string, unknown>;
 }): Promise<void> {
-  // email_send_logs.queue_id => bigint (DB)
-  // Supabase/Postgres tip coercion string yerine sayıyla gelirse daha sağlıklı.
-  const queueIdNum = Number(params.queueId);
-  const queueIdNumOk = Number.isFinite(queueIdNum);
+  // This processor consumes speaker_email_queue, whose primary key is UUID.
+  // Keep that UUID in the dedicated FK instead of coercing it into BIGINT.
 
   const { error } = await (params.supabase as unknown as {
     from: (_table: string) => {
@@ -136,7 +134,8 @@ async function insertSendLog(params: {
     };
   }).from('email_send_logs').insert([
     {
-      queue_id: queueIdNumOk ? queueIdNum : params.queueId,
+      queue_id: null,
+      speaker_queue_id: params.queueId,
       recipient_email: params.recipientEmail,
       template_code: params.templateCode,
       event_type: params.eventType,
@@ -147,7 +146,8 @@ async function insertSendLog(params: {
   if (error) {
     const detail = [error.message, error.details, error.hint].filter(Boolean).join(' | ');
     log(`insertSendLog ERROR: ${detail}`);
-    throw new Error(detail);
+    // Logging is best-effort. A log failure after delivery must never trigger a resend.
+    return;
   }
 }
 
