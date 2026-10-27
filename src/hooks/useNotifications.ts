@@ -17,6 +17,10 @@ import {
   subscribeToNotifications,
   RealtimeNotificationCallback,
 } from '../lib/supabaseNotifications';
+import {
+  mergeNotificationFeed,
+  shouldAcceptRealtimeNotification,
+} from '../lib/notificationState.js';
 
 // ===========================================================
 // HOOK INTERFACE
@@ -116,19 +120,7 @@ export const useNotifications = (
         if (requestId !== fetchRequestId.current) return;
 
         response.data.forEach((notification) => seenNotificationIds.current.add(notification.id));
-        const fetchedIds = new Set(response.data.map((notification) => notification.id));
-        const newestFetchedAt = response.data[0]?.created_at;
-        setNotifications((prev) => {
-          // Retain only current-recipient realtime inserts newer than the fetched page.
-          const realtimeOnly = prev.filter((notification) =>
-            notification.user_id === user_id &&
-            !fetchedIds.has(notification.id) &&
-            (!newestFetchedAt || new Date(notification.created_at).getTime() > new Date(newestFetchedAt).getTime())
-          );
-          return [...realtimeOnly, ...response.data].sort(
-            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-        });
+        setNotifications((prev) => mergeNotificationFeed(prev, response.data, user_id));
       } catch (err: any) {
         if (requestId !== fetchRequestId.current) return;
         setError(err.message || 'Bildirimler yüklenirken hata oluştu');
@@ -242,8 +234,7 @@ export const useNotifications = (
     // A realtime INSERT can race the initial SELECT. Deduplicate by stable database ID.
     const callback: RealtimeNotificationCallback = (notification) => {
       // Defense in depth: never add a notification for another recipient to this UI.
-      if (notification.user_id !== user_id || seenNotificationIds.current.has(notification.id)) return;
-      seenNotificationIds.current.add(notification.id);
+      if (!shouldAcceptRealtimeNotification(notification, user_id, seenNotificationIds.current)) return;
       setNotifications((prev) => [notification, ...prev.filter((item) => item.id !== notification.id)]);
       // Refresh from the database rather than incrementing a count that may race the initial fetch.
       if (!notification.is_read) void refreshUnreadCount();
