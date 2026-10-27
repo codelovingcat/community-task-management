@@ -17,8 +17,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run test:config
-      - run: npm run build
+      - run: npm run test:config && npm run build
 
   email-worker:
     name: Email worker tests and TypeScript build
