@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-
+    "test:config": "node --test tests/supabase-config.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
