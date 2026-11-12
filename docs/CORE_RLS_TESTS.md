@@ -14,6 +14,14 @@ organization; and an administrator can manage tasks and departments but cannot
 promote a member to Super Admin. The trusted service role can access the queue.
 Task status updates and allowed self-assignment are also exercised.
 
+The same CI workflow runs `tests/email-delivery-claim-integration.test.mjs`
+against both queue shapes. It applies the actual delivery-claim migration to
+synthetic tables and exercises the compiled worker's actual claim function. It
+checks that only one compare-and-set claim can succeed,
+that an unclaimed or stale owner cannot overwrite it, and that a sent row cannot
+be claimed again. PGlite serializes statements; this is a database predicate
+regression test, not a multi-connection stress test or provider-delivery test.
+
 These fixtures are not a complete Supabase schema, and the test does not verify
 Supabase Auth/JWT signature validation, PostgREST exposure, the actual live
 policies, frontend CRUD, every migration or production deployments. The
