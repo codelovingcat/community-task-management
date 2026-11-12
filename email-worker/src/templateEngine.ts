@@ -52,7 +52,7 @@ export function missingTemplateParams(source: string, params: Record<string, str
   const names = new Set<string>();
   for (const match of source.matchAll(placeholder)) {
     const name = match[1].trim();
-    if (!params[name]?.trim()) names.add(name);
+    if (!Object.prototype.hasOwnProperty.call(params, name) || !params[name]?.trim()) names.add(name);
   }
   return [...names];
 }
@@ -60,7 +60,12 @@ export function missingTemplateParams(source: string, params: Record<string, str
 export function normalizeTemplateParams(params: Record<string, unknown>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(params ?? {})) {
-    out[k] = v == null ? '' : typeof v === 'string' ? v : String(v);
+    // Define an own property even for names such as __proto__. Assignment to
+    // that name on an ordinary object invokes the inherited prototype setter.
+    Object.defineProperty(out, k, {
+      value: v == null ? '' : typeof v === 'string' ? v : String(v),
+      enumerable: true, writable: true, configurable: true
+    });
   }
   return out;
 }

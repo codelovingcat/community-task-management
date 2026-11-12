@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { renderTemplate, renderSubject, normalizeTemplateParams } = require('../dist/templateEngine.js');
+const { renderTemplate, renderSubject, normalizeTemplateParams, missingTemplateParams } = require('../dist/templateEngine.js');
 
 test('renders placeholders with and without surrounding whitespace', () => {
   assert.equal(
@@ -51,4 +51,12 @@ test('rejects placeholders in attributes, URL, comments and executable contexts'
 test('preserves multiple occurrences and treats replacements as literal text', () => {
   assert.equal(renderTemplate('<p>{{name}} / {{name}}</p>', { name: '$& <b> &amp;' }),
     '<p>$&amp; &lt;b&gt; &amp;amp; / $&amp; &lt;b&gt; &amp;amp;</p>');
+});
+
+test('parameter names that collide with object prototypes are handled as ordinary own values', () => {
+  const params = normalizeTemplateParams(JSON.parse('{"__proto__":"Ada <Admin>","constructor":"Hello","toString":"World"}'));
+  assert.equal(Object.getPrototypeOf(params), Object.prototype);
+  assert.deepEqual(missingTemplateParams('{{__proto__}} {{constructor}} {{toString}}', params), []);
+  assert.equal(renderTemplate('<p>{{__proto__}} {{constructor}} {{toString}}</p>', params), '<p>Ada &lt;Admin&gt; Hello World</p>');
+  assert.deepEqual(missingTemplateParams('{{__proto__}} {{constructor}} {{toString}}', {}), ['__proto__', 'constructor', 'toString']);
 });
