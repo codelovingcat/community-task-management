@@ -12,7 +12,7 @@ test('counts stale pending claims in both queues without fetching identifiers or
         select(...args) { steps.push(['select', ...args]); return this; },
         eq(...args) { steps.push(['eq', ...args]); return this; },
         not(...args) { steps.push(['not', ...args]); return this; },
-        lt(...args) { steps.push(['lt', ...args]); return Promise.resolve({ count: table === 'email_queue' ? 2 : 0, error: null }); },
+        or(...args) { steps.push(['or', ...args]); return Promise.resolve({ count: table === 'email_queue' ? 2 : 0, error: null }); },
       };
       return query;
     }
@@ -22,13 +22,13 @@ test('counts stale pending claims in both queues without fetching identifiers or
   assert.equal(requests.length, 2);
   for (const [, steps] of requests) assert.deepEqual(steps, [
     ['select', 'id', { count: 'exact', head: true }], ['eq', 'status', 'pending'],
-    ['not', 'delivery_claim_token', 'is', null], ['lt', 'delivery_claimed_at', cutoff.toISOString()]
+    ['not', 'delivery_claim_token', 'is', null], ['or', `delivery_claimed_at.is.null,delivery_claimed_at.lt.${cutoff.toISOString()}`]
   ]);
 });
 
 test('does not report a missing or failed count as a healthy queue', async (t) => {
   const q = { select() { return this; }, eq() { return this; }, not() { return this; },
-    lt() { return Promise.resolve({ count: null, error: { message: 'private secret' } }); } };
+    or() { return Promise.resolve({ count: null, error: { message: 'private secret' } }); } };
   t.mock.method(clientModule, 'getSupabaseClient', () => ({ from: () => q }));
   await assert.rejects(getStaleClaimCounts(new Date()), /Could not inspect email_queue claims/);
 });

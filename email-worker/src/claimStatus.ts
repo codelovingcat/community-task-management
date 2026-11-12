@@ -12,8 +12,8 @@ export async function getStaleClaimCounts(cutoff: Date): Promise<Record<string, 
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
       .not('delivery_claim_token', 'is', null)
-      .lt('delivery_claimed_at', cutoff.toISOString());
-    if (error || count === null) throw new Error(`Could not inspect ${table} claims`);
+      .or(`delivery_claimed_at.is.null,delivery_claimed_at.lt.${cutoff.toISOString()}`);
+    if (error || count === null || !Number.isSafeInteger(count) || count < 0) throw new Error(`Could not inspect ${table} claims`);
     counts[table] = count;
   }
   return counts;
@@ -23,7 +23,7 @@ async function main(): Promise<void> {
   // Allow time for normal provider requests and a slow database update.
   const cutoff = new Date(Date.now() - 15 * 60 * 1000);
   const counts = await getStaleClaimCounts(cutoff);
-  for (const table of tables) console.log(`${table}: ${counts[table]} pending claims older than 15 minutes`);
+  for (const table of tables) console.log(`${table}: ${counts[table]} pending claims older than 15 minutes or missing a timestamp`);
   if (Object.values(counts).some((count) => count > 0)) process.exitCode = 2;
 }
 
