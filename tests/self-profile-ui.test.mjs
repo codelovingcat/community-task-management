@@ -82,3 +82,22 @@ test('signed-out users and retired token links do not request profile data', asy
   assert.equal(calls, 0);
   await act(async () => { view.unmount(); });
 });
+
+test('a failed profile request can be retried without exposing server errors or using a token', async () => {
+  const state = { current: auth('member-a') };
+  const calls = [];
+  const components = loadComponents(state, async (...args) => {
+    calls.push(args);
+    return calls.length === 1
+      ? { data: null, error: { message: 'private diagnostic' } }
+      : { data: profile('member-a', 'Member A'), error: null };
+  });
+  let view;
+  await act(async () => { view = create(React.createElement(components.default)); });
+  assert.match(text(view), /Profil yüklenemedi/);
+  assert.doesNotMatch(text(view), /private diagnostic/);
+  await act(async () => { view.root.findByType('button').props.onClick(); });
+  assert.match(text(view), /Member A/);
+  assert.deepEqual(calls, [['get_my_profile'], ['get_my_profile']]);
+  await act(async () => { view.unmount(); });
+});

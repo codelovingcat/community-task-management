@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [data, setData] = useState<ProfilePageData | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -69,7 +70,7 @@ export default function ProfilePage() {
       }
     })();
     return () => { active = false; };
-  }, [authLoading, user?.id, profile?.id]);
+  }, [authLoading, user?.id, profile?.id, retryCount]);
 
   if (authLoading || loading || (data && data.member.id !== profile?.id)) {
     return <div className="p-8 text-sm text-[var(--text-secondary)]">Profil yükleniyor…</div>;
@@ -78,7 +79,12 @@ export default function ProfilePage() {
     return <div className="p-8 text-sm text-[var(--text-secondary)]">Profilinizi görmek için giriş yapmalısınız.</div>;
   }
   if (error || !data) {
-    return <div role="alert" className="p-8 text-sm text-red-500">Profil yüklenemedi. Lütfen tekrar deneyin.</div>;
+    return <div role="alert" className="p-8 text-sm text-red-500">
+      <p>Profil yüklenemedi. Lütfen tekrar deneyin.</p>
+      <button type="button" className="mt-3 underline" onClick={() => setRetryCount((count) => count + 1)}>
+        Tekrar dene
+      </button>
+    </div>;
   }
 
   const member = data.member;
