@@ -37,7 +37,7 @@ test('escapes untrusted text without changing template markup or plain-text subj
 
 test('rejects placeholders in attributes, URL, comments and executable contexts', () => {
   const templates = [
-    '<a href="{{link}}">open</a>', '<a href={{link}}>open</a>',
+    '<a href={{link}}>open</a>', '<a href="https://site.invalid/{{link}}">open</a>',
     '<img src="{{link}}">', '<div style="{{link}}">x</div>',
     '<!-- {{link}} --><p>x</p>', '<script>{{link}}</script>',
     '<style>{{link}}</style>', '<svg><text>{{link}}</text></svg>',
@@ -45,6 +45,20 @@ test('rejects placeholders in attributes, URL, comments and executable contexts'
   ];
   for (const template of templates) {
     assert.throws(() => renderTemplate(template, { link: 'javascript:alert(1)' }), /only supported in HTML text/, template);
+  }
+});
+
+test('renders a complete HTTPS anchor link with escaped query parameters', () => {
+  assert.equal(renderTemplate('<a href="{{link}}">open</a>', { link: 'https://example.invalid/path?a=1&b=2' }),
+    '<a href="https://example.invalid/path?a=1&amp;b=2">open</a>');
+  assert.equal(renderTemplate("<a HREF='{{link}}'>open</a>", { link: 'https://example.invalid/' }),
+    "<a HREF='https://example.invalid/'>open</a>");
+});
+
+test('rejects non-HTTPS, malformed, credentialed and control-character links', () => {
+  for (const value of ['javascript:alert(1)', 'data:text/html,x', '//example.invalid', 'http://example.invalid',
+    'https://user:pass@example.invalid/', 'https://example.invalid/\nother', 'https://example.invalid/\\evil', '', 'not a URL']) {
+    assert.throws(() => renderTemplate('<a href="{{link}}">open</a>', { link: value }), /Unsafe email link/, value);
   }
 });
 
