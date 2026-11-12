@@ -6,20 +6,22 @@ lockfiles and uses Node 20 for the frontend and Node 24 for the email-worker.
 The workflow token only has `contents: read`.
 
 The frontend job audits production dependencies at the high/critical threshold,
-runs the strict TypeScript check, notification tests, the Vite production build,
+runs the strict TypeScript check, a focused ESLint correctness gate, notification tests, the Vite production build,
 and the listed Node-based regression and isolated PostgreSQL policy tests. Run
 the type-check locally with:
 
 ```sh
 npm ci
 npm run typecheck
+npm run lint
 ```
 
 `typecheck` uses the existing `tsconfig.json` settings for the `src` tree,
-including strict mode and unused-local/parameter checks. The worker's `npm test`
-separately builds its TypeScript and runs worker tests. This project does not
-yet have a configured ESLint rule set; unused checks are not a replacement for
-linting, and the current check does not type-check test files.
+including strict mode and unused-local/parameter checks. ESLint covers the
+frontend and serverless API with a small set of correctness rules and the React
+rules of hooks; it does not yet enforce style, effect dependencies, or worker code. The worker's `npm test`
+separately builds its TypeScript and runs worker tests. The current check does
+not type-check test files.
 
 The security gate checks production dependencies only; moderate findings and
 development-dependency advisories do not fail it. Run `npm audit` separately

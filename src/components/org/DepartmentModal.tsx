@@ -119,8 +119,7 @@ export const DepartmentModal: React.FC<DepartmentModalProps> = ({
         if (!active) return;
         setError(e?.message || 'Kişiler yüklenemedi.');
       } finally {
-        if (!active) return;
-        setLoadingMembers(false);
+        if (active) setLoadingMembers(false);
       }
     })();
 
