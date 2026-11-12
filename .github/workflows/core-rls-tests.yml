@@ -19,5 +19,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: npm ci && npm run build
+        working-directory: email-worker
       - run: node --test tests/core-rls-integration.test.mjs
       - run: node --test tests/core-table-grants.test.mjs
+      - run: node --test tests/email-delivery-claim-integration.test.mjs
