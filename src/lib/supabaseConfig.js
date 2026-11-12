@@ -32,6 +32,12 @@ export function getRequiredSupabaseConfig(urlInput, anonKeyInput) {
     throw new Error('[Supabase] VITE_SUPABASE_URL must be a valid absolute URL.');
   }
 
+  // A project URL should not contain credentials or request-specific suffixes.
+  // They can be silently embedded into browser code or corrupt API endpoints.
+  if (parsedUrl.username || parsedUrl.password || parsedUrl.search || parsedUrl.hash) {
+    throw new Error('[Supabase] VITE_SUPABASE_URL cannot contain credentials, a query, or a fragment.');
+  }
+
   const isLoopback =
     parsedUrl.hostname === 'localhost' ||
     parsedUrl.hostname === '127.0.0.1' ||

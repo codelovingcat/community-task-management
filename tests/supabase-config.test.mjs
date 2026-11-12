@@ -53,3 +53,17 @@ test('rejects unsupported input types', () => {
     /VITE_SUPABASE_URL is required/
   );
 });
+
+test('rejects credentials, query strings and fragments in project URLs without echoing them', () => {
+  for (const url of [
+    'https://user:private-password@example.supabase.co',
+    'https://example.supabase.co/?token=private-token',
+    'https://example.supabase.co/#private-fragment',
+  ]) {
+    assert.throws(() => getRequiredSupabaseConfig(url, 'public-anon-key'), (error) => {
+      assert.match(error.message, /cannot contain credentials, a query, or a fragment/);
+      assert.doesNotMatch(error.message, /private-password|private-token|private-fragment/);
+      return true;
+    });
+  }
+});
