@@ -9,6 +9,12 @@ idempotency key and, for older records, by email. This preserves suppression
 when a recipient's email changes. Unclaimed jobs cancelled due to a birthday
 correction can be enqueued for the corrected date.
 
+`20261112195906_allow_birthdays_without_email.sql` additionally generates
+in-app birthday notices and eligible team emails when the birthday member has
+no usable personal email. It skips the personal email and excludes team
+recipients with empty or whitespace-only addresses. It keeps the earlier
+delivery and claim protections unchanged.
+
 A retained claim is deliberately conservative: an operator must reconcile the
 provider outcome before deciding whether to retry. It does not guarantee
 exactly-once delivery across external providers, discarded queue history, or
@@ -17,7 +23,7 @@ still require separate verification.
 
 ## Deployment
 
-This migration requires `20261104204533_email_delivery_claims.sql` and its
+These migrations require `20261104204533_email_delivery_claims.sql` and its
 `delivery_claim_token` column. The Task Manager migration history previously
 inspected did not include that change. Other processors sharing the queue must
 also follow the claim protocol. Do not apply either migration without first
