@@ -9,7 +9,7 @@ const c = 'a1000000-0000-4000-8000-000000000003';
 const d = 'a1000000-0000-4000-8000-000000000004';
 const e = 'a1000000-0000-4000-8000-000000000005';
 const group = 'b1000000-0000-4000-8000-000000000001';
-const migration = new URL('../supabase/migrations/20261111210347_avoid_duplicate_birthday_team_mail.sql', import.meta.url);
+const migration = new URL('../supabase/migrations/20261112195906_allow_birthdays_without_email.sql', import.meta.url);
 
 async function fixture(t) {
   const db = new PGlite(); t.after(() => db.close());
@@ -71,3 +71,18 @@ test('a new birthday queues one personal mail even when the daily job repeats', 
   const rows = (await db.query('SELECT recipient_email, template_code FROM public.email_queue')).rows;
   assert.deepEqual(rows, [{ recipient_email: 'ada@example.invalid', template_code: 'birthday_personal' }]);
 });
+
+for (const email of [null, '   ']) {
+  test(`birthday without a usable personal email (${JSON.stringify(email)}) still notifies the community and team`, async (t) => {
+    const db = await fixture(t);
+    await db.query('UPDATE public.members SET email=$1 WHERE id=$2', [email, person]);
+    await db.exec(`
+      INSERT INTO public.org_area_members(user_id,area_id) VALUES ('${person}','${group}'), ('${b}','${group}'), ('${c}','${group}');
+      UPDATE public.members SET email='   ' WHERE id='${c}';
+      SELECT public.enqueue_birthday_emails(); SELECT public.enqueue_birthday_emails();
+    `);
+    const jobs = (await db.query('SELECT recipient_email, template_code FROM public.email_queue ORDER BY id')).rows;
+    assert.deepEqual(jobs, [{ recipient_email: 'new-b@example.invalid', template_code: 'birthday_team' }]);
+    assert.equal((await db.query("SELECT count(*)::int AS n FROM public.notifications WHERE type='birthday'")).rows[0].n, 5);
+  });
+}
