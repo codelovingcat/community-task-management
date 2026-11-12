@@ -2,7 +2,7 @@
 // User Profile Context - Zincir Atarlı Task Management
 // ============================================================
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { getMemberByEmail } from '../lib/supabaseMembers';
 import { FullMember } from '../types/member';
@@ -42,90 +42,89 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
   const [profile, setProfile] = useState<FullMember | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch profile when user changes
-  const fetchProfile = async (userEmail: string) => {
+  // Every auth change invalidates in-flight profile requests. A slow response
+  // for the previous account must never become the current account's profile.
+  const generation = useRef(0);
+  const currentUser = useRef<User | null>(null);
+  const mounted = useRef(false);
+
+  const loadProfile = async (target: User, request: number) => {
     try {
-      const profileData = await getMemberByEmail(userEmail);
-      setProfile(profileData);
-    } catch (error) {
-      // console.error('Error fetching profile:', error);
-      setProfile(null);
+      const result = target.email ? await getMemberByEmail(target.email) : null;
+      if (mounted.current && generation.current === request) setProfile(result);
+    } catch {
+      if (mounted.current && generation.current === request) setProfile(null);
+    } finally {
+      if (mounted.current && generation.current === request) setIsLoading(false);
     }
   };
 
-  // Handle auth state change
-  const handleAuthChange = async (event: string, session: Session | null) => {
-    if (event === 'SIGNED_IN' && session) {
-      setUser(session.user);
-      await fetchProfile(session.user.email || '');
-    } else if (event === 'SIGNED_OUT') {
-      setUser(null);
-      setProfile(null);
-    } else if (event === 'TOKEN_REFRESHED' && session) {
-      setUser(session.user);
+  const applySession = (session: Session | null, deferLookup: boolean) => {
+    const request = ++generation.current;
+    const nextUser = session?.user ?? null;
+    currentUser.current = nextUser;
+    setProfile(null);
+    setUser(nextUser);
+    if (!nextUser?.email) {
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+    setIsLoading(true);
+    if (deferLookup) {
+      // Avoid calling Supabase from inside onAuthStateChange's callback.
+      setTimeout(() => {
+        if (mounted.current && generation.current === request) void loadProfile(nextUser, request);
+      }, 0);
+    } else {
+      void loadProfile(nextUser, request);
+    }
   };
 
-  // Initial load and subscribe to auth changes
   useEffect(() => {
-  // console.log('UserProfileContext useEffect triggered');
-    
-    const initializeAuth = async () => {
-      // console.log('initializeAuth called');
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        // console.log('getSession result:', { session: !!session, userEmail: session?.user?.email });
-        
-        if (session) {
-          // console.log('Setting user:', session.user.id);
-          setUser(session.user);
-          if (session.user.email) {
-            // console.log('Fetching profile for:', session.user.email);
-            await fetchProfile(session.user.email);
-          }
-        } else {
-          console.log('No session - anonymous mode');
-        }
-        // console.log('Setting isLoading false');
-        setIsLoading(false);
-      } catch (error) {
-        // console.error('initializeAuth ERROR:', error);
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-
+    mounted.current = true;
+    const initialGeneration = generation.current;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        // console.log('onAuthStateChange:', event, !!session);
-      handleAuthChange(event, session);
+      if (!mounted.current) return;
+      // Refreshing a token for the same account must not invalidate a profile
+      // lookup already in flight.
+      if (event === 'TOKEN_REFRESHED' && session && session.user.id === currentUser.current?.id) {
+        currentUser.current = session.user;
+        setUser(session.user);
+        return;
+      }
+      applySession(session, true);
+    });
+
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted.current && generation.current === initialGeneration) applySession(session, false);
+    }).catch(() => {
+      if (mounted.current && generation.current === initialGeneration) applySession(null, false);
     });
 
     return () => {
-      // console.log('UserProfileContext cleanup');
+      mounted.current = false;
+      ++generation.current;
       subscription.unsubscribe();
     };
   }, []);
 
-  // Sign out function
   const signOut = async () => {
+    const request = generation.current;
     try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
-    } catch (error) {
-      // console.error('Error signing out:', error);
+      const { error } = await supabase.auth.signOut();
+      if (error) return;
+      if (mounted.current && generation.current === request) applySession(null, false);
+    } catch {
+      // Keep the active session visible if signing out failed.
     }
   };
 
-  // Refresh profile function
   const refreshProfile = async () => {
-    if (user?.email) {
-      setIsLoading(true);
-      await fetchProfile(user.email);
-      setIsLoading(false);
-    }
+    const target = currentUser.current;
+    if (!target?.email) return;
+    const request = ++generation.current;
+    setIsLoading(true);
+    await loadProfile(target, request);
   };
 
   const value: UserProfileContextType = {
