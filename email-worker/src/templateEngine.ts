@@ -14,15 +14,36 @@ function escapeHtml(value: string): string {
   })[character]!);
 }
 
-// Only HTML text nodes are supported. Attribute/URL, CSS, script, comments and
-// foreign-content contexts need different rules, so they fail closed.
+function safeHttpsUrl(value: string): string {
+  // Do not normalize away control characters or accept credentials in links.
+  if (!value || /[\u0000-\u0020\u007f\\]/.test(value)) throw new Error('Unsafe email link');
+  let parsed: URL;
+  try { parsed = new URL(value); } catch { throw new Error('Unsafe email link'); }
+  if (parsed.protocol !== 'https:' || !parsed.hostname || parsed.username || parsed.password) throw new Error('Unsafe email link');
+  return parsed.href;
+}
+
+// Ordinary parameters are supported in text. A complete, quoted href on an
+// HTML anchor can contain an HTTPS URL parameter. Other contexts fail closed.
 export function renderTemplate(html: string, params: Record<string, string>): string {
   const textRanges: Array<{ start: number; end: number }> = [];
+  const urlRanges = new Map<number, number>();
   const root = parseFragment(html, { sourceCodeLocationInfo: true });
 
   function visit(node: DefaultTreeAdapterTypes.Node, safe: boolean): void {
     if ('tagName' in node) {
       safe = safe && node.namespaceURI === 'http://www.w3.org/1999/xhtml' && !rawTextElements.has(node.tagName);
+      if (safe && node.tagName === 'a') {
+        const location = node.sourceCodeLocation?.attrs?.href;
+        if (location) {
+          const attribute = html.slice(location.startOffset, location.endOffset);
+          const full = /^href\s*=\s*(["'])(\{\{\s*[^}]+?\s*\}\})\1$/i.exec(attribute);
+          if (full) {
+            const start = location.startOffset + attribute.indexOf(full[2]);
+            urlRanges.set(start, start + full[2].length);
+          }
+        }
+      }
     }
     if (node.nodeName === '#text' && safe && node.sourceCodeLocation) {
       textRanges.push({ start: node.sourceCodeLocation.startOffset, end: node.sourceCodeLocation.endOffset });
@@ -34,6 +55,7 @@ export function renderTemplate(html: string, params: Record<string, string>): st
   visit(root, true);
 
   return html.replace(placeholder, (match: string, key: string, offset: number) => {
+    if (urlRanges.get(offset) === offset + match.length) return escapeHtml(safeHttpsUrl(valueFor(params, key)));
     if (!textRanges.some((range) => offset >= range.start && offset + match.length <= range.end)) {
       throw new Error('Email template placeholders are only supported in HTML text');
     }

@@ -8,6 +8,13 @@ bounded failure/retry path and are not sent. Dynamic parameter values in local
 HTML are escaped by the renderer. Unknown template records are never invented by
 the worker.
 
+The local renderer also accepts a whole, quoted anchor `href="{{link}}"` when
+the value is an absolute HTTPS URL without embedded credentials or control
+characters. Other dynamic attributes, partial URLs, executable contexts, and
+non-HTTPS links are rejected. URL parameters are not a destination allowlist;
+an operator should only send links to destinations appropriate for recipients.
+Provider-hosted templates are rendered independently and must be reviewed there.
+
 The following names were present in the Task Manager database at inspection;
 other environments and later edits can differ. The actual contract comes from
 the active template's subject and HTML and must match its enqueue caller.
