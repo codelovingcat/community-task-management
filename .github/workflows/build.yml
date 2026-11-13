@@ -28,6 +28,9 @@ jobs:
         run: npm run lint
       - run: npm run test:notifications
       - run: npm run build
+      - run: npm run typecheck:portal
+      - run: npm run test:portal
+      - run: npm run build:portal
       - run: node --test tests/supabase-config.test.mjs
       - run: node --test tests/event-staff.test.mjs
       - run: node --test tests/event-delete-ui.test.mjs
