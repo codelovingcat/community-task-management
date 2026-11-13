@@ -32,7 +32,7 @@ test('core member, task and organization policies enforce registered roles', asy
       status text NOT NULL, title text NOT NULL, updated_at timestamptz DEFAULT now());
     INSERT INTO public.members (id,email,system_role) VALUES
       ('${a}','member-a@example.invalid','Member'), ('${b}','member-b@example.invalid','Member'),
-      ('${admin}','admin@example.invalid','Admin');
+      ('${admin}','admin@example.invalid','Admin'), ('a1000000-0000-4000-8000-000000000004','super@example.invalid','Super Admin');
     INSERT INTO public.tasks (id,assignee_id,status,title) VALUES
       ('${t1}','${a}','pending','A'), ('${t2}','${b}','pending','B');
     CREATE TABLE public.announcement_members (id integer PRIMARY KEY, member_id uuid);
@@ -49,6 +49,8 @@ test('core member, task and organization policies enforce registered roles', asy
     '20261026000100_harden_core_rls_and_task_counters.sql',
     '20261026004000_lock_down_member_task_org_rls.sql',
     '20261103000000_restrict_member_helper_execution.sql',
+    '20261113191954_admin_only_task_mutations.sql',
+    '20261113191954_admin_only_task_mutations.sql',
   ]) {
     await db.exec(await readFile(new URL(`../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
@@ -63,26 +65,31 @@ test('core member, task and organization policies enforce registered roles', asy
   assert.equal((await db.query('SELECT * FROM public.org_departments')).rows.length, 0);
   await assert.rejects(db.query(`INSERT INTO public.tasks(id,assignee_id,status,title) VALUES ('${t3}','${a}','pending','x')`), (error) => error.code === '42501');
   await assert.rejects(db.query('SELECT * FROM public.email_queue'), (error) => error.code === '42501');
-  await db.exec(`SELECT set_config('request.jwt.claims', '{"email":"member-a@example.invalid"}', false)`);
-  assert.equal((await db.query('SELECT * FROM public.members')).rows.length, 3);
+  await db.exec(`RESET ROLE; CREATE POLICY legacy_all ON public.tasks FOR ALL TO authenticated USING (true) WITH CHECK (true); SET ROLE authenticated; SELECT set_config('request.jwt.claims', '{"email":"member-a@example.invalid"}', false)`);
+  assert.equal((await db.query('SELECT * FROM public.members')).rows.length, 4);
   assert.equal((await db.query('SELECT * FROM public.tasks')).rows.length, 2);
   assert.equal((await db.query('SELECT * FROM public.org_departments')).rows.length, 1);
-  assert.equal((await db.query(`UPDATE public.tasks SET status='started' WHERE id='${t1}' RETURNING id`)).rows.length, 1);
+  assert.equal((await db.query(`UPDATE public.tasks SET status='started' WHERE id='${t1}' RETURNING id`)).rows.length, 0);
   assert.equal((await db.query(`UPDATE public.tasks SET status='started' WHERE id='${t2}' RETURNING id`)).rows.length, 0);
-  await assert.rejects(db.query(`UPDATE public.tasks SET title='forged' WHERE id='${t1}'`), /only change task status/);
-  await assert.rejects(db.query(`UPDATE public.tasks SET assignee_id='${b}' WHERE id='${t1}'`), /Only an administrator can reassign/);
+  assert.equal((await db.query(`UPDATE public.tasks SET title='forged' WHERE id='${t1}' RETURNING id`)).rows.length, 0);
+  assert.equal((await db.query(`UPDATE public.tasks SET assignee_id='${b}' WHERE id='${t1}' RETURNING id`)).rows.length, 0);
   await assert.rejects(db.query('INSERT INTO public.org_departments VALUES (2)'), (error) => error.code === '42501');
   await assert.rejects(db.query(`INSERT INTO public.tasks(id,assignee_id,status,title) VALUES ('${t3}','${b}','pending','x')`), (error) => error.code === '42501');
-  assert.equal((await db.query(`INSERT INTO public.tasks(id,assignee_id,status,title) VALUES ('${t3}','${a}','pending','mine') RETURNING id`)).rows.length, 1);
+  await assert.rejects(db.query(`INSERT INTO public.tasks(id,assignee_id,status,title) VALUES ('${t3}','${a}','pending','mine')`), (error) => error.code === '42501');
   assert.equal((await db.query(`DELETE FROM public.tasks WHERE id='${t2}' RETURNING id`)).rows.length, 0);
-  assert.equal((await db.query(`DELETE FROM public.tasks WHERE id='${t3}' RETURNING id`)).rows.length, 1);
+  assert.equal((await db.query(`DELETE FROM public.tasks WHERE id='${t1}' RETURNING id`)).rows.length, 0);
   assert.equal((await db.query(`UPDATE public.members SET system_role='Admin' WHERE id='${a}' RETURNING id`)).rows.length, 0);
+  await assert.rejects(db.query('TRUNCATE public.tasks'), (error) => error.code === '42501');
   await db.exec(`SELECT set_config('request.jwt.claims', '{"email":"admin@example.invalid"}', false)`);
+  assert.equal((await db.query(`INSERT INTO public.tasks(id,assignee_id,status,title) VALUES ('${t3}','${a}','pending','admin assigned') RETURNING id`)).rows.length, 1);
   assert.equal((await db.query('INSERT INTO public.org_departments VALUES (2) RETURNING id')).rows.length, 1);
   assert.equal((await db.query(`UPDATE public.tasks SET title='admin edit' WHERE id='${t2}' RETURNING id`)).rows.length, 1);
   await assert.rejects(db.query(`UPDATE public.members SET system_role='Super Admin' WHERE id='${a}'`), /Only a Super Admin can change system roles/);
   assert.equal((await db.query(`DELETE FROM public.tasks WHERE id='${t2}' RETURNING id`)).rows.length, 1);
   await assert.rejects(db.query('SELECT * FROM public.email_queue'), (error) => error.code === '42501');
+  await db.exec(`SELECT set_config('request.jwt.claims', '{"email":"super@example.invalid"}', false)`);
+  assert.equal((await db.query(`UPDATE public.tasks SET status='completed' WHERE id='${t1}' RETURNING id`)).rows.length, 1);
+  assert.equal((await db.query(`DELETE FROM public.tasks WHERE id='${t1}' RETURNING id`)).rows.length, 1);
   await db.exec('RESET ROLE; SET ROLE service_role');
   assert.equal((await db.query('INSERT INTO public.email_queue VALUES (1) RETURNING id')).rows.length, 1);
   assert.equal((await db.query('SELECT * FROM public.email_queue')).rows.length, 1);

@@ -19,3 +19,6 @@ build/
 # Sistem dosyaları
 .DS_Store
 thumbs.db
+
+# Supabase CLI local cache
+supabase/.temp/
