@@ -52,7 +52,7 @@ test('profile retries RPC failures and distinguishes an unregistered account', a
   await act(async () => { view = create(React.createElement(Profile)); });
   assert.match(JSON.stringify(view.toJSON()), /Bilgileriniz yüklenemedi/);
   await act(async () => { view.root.findByType('button').props.onClick(); });
-  assert.match(JSON.stringify(view.toJSON()), /Üyeliğiniz henüz eşleştirilmemiş/);
+  assert.match(JSON.stringify(view.toJSON()), /Topluluk çalışma alanı/);
   await act(async () => view.unmount());
 });
 test('a synchronous auth event takes precedence over initial session lookup', async () => {

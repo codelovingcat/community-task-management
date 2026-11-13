@@ -1,0 +1,17 @@
+name: Prepare next portal migration
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/portal-migration-helper.yml']
+permissions:
+  contents: read
+jobs:
+  filename:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npx --yes supabase migration new --help
+      - run: npx --yes supabase migration new private_event_tickets
