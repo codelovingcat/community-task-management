@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
-import { getMemberByEmail } from '../lib/supabaseMembers';
+import { getCurrentMember } from '../lib/supabaseMembers';
 import { FullMember } from '../types/member';
 import { User, Session } from '@supabase/supabase-js';
 
@@ -48,9 +48,9 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
   const currentUser = useRef<User | null>(null);
   const mounted = useRef(false);
 
-  const loadProfile = async (target: User, request: number) => {
+  const loadProfile = async (request: number) => {
     try {
-      const result = target.email ? await getMemberByEmail(target.email) : null;
+      const result = await getCurrentMember();
       if (mounted.current && generation.current === request) setProfile(result);
     } catch {
       if (mounted.current && generation.current === request) setProfile(null);
@@ -65,7 +65,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     currentUser.current = nextUser;
     setProfile(null);
     setUser(nextUser);
-    if (!nextUser?.email) {
+    if (!nextUser) {
       setIsLoading(false);
       return;
     }
@@ -73,10 +73,10 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     if (deferLookup) {
       // Avoid calling Supabase from inside onAuthStateChange's callback.
       setTimeout(() => {
-        if (mounted.current && generation.current === request) void loadProfile(nextUser, request);
+        if (mounted.current && generation.current === request) void loadProfile(request);
       }, 0);
     } else {
-      void loadProfile(nextUser, request);
+      void loadProfile(request);
     }
   };
 
@@ -121,10 +121,10 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
 
   const refreshProfile = async () => {
     const target = currentUser.current;
-    if (!target?.email) return;
+    if (!target) return;
     const request = ++generation.current;
     setIsLoading(true);
-    await loadProfile(target, request);
+    await loadProfile(request);
   };
 
   const value: UserProfileContextType = {

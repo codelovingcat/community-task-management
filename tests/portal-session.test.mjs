@@ -46,11 +46,24 @@ test('profile retries RPC failures and distinguishes an unregistered account', a
     calls++;
     return calls === 1 ? { data: null, error: { code: 'PGRST202' } } : { data: null, error: null };
   }};
-  const { Profile } = load('Profile.tsx', { './client': { client } });
+  const { Profile } = load('Profile.tsx', { './client': { client }, './Dashboard': { Dashboard: () => null } });
   let view;
   await act(async () => { view = create(React.createElement(Profile)); });
   assert.match(JSON.stringify(view.toJSON()), /Bilgileriniz yüklenemedi/);
   await act(async () => { view.root.findByType('button').props.onClick(); });
   assert.match(JSON.stringify(view.toJSON()), /Üyeliğiniz henüz eşleştirilmemiş/);
+  await act(async () => view.unmount());
+});
+test('a synchronous auth event takes precedence over initial session lookup', async () => {
+  const client = { auth: {
+    onAuthStateChange(fn) { fn('SIGNED_IN', { user: { id: 'new-user' } }); return { data: { subscription: { unsubscribe() {} } } }; },
+    getSession: async () => ({ data: { session: { user: { id: 'old-user' } } }, error: null }),
+  }};
+  const { usePortalSession } = load('usePortalSession.ts', { './client': { client } });
+  function Probe() { return React.createElement('pre', {}, JSON.stringify(usePortalSession())); }
+  let view;
+  await act(async () => { view = create(React.createElement(Probe)); });
+  assert.match(view.root.findByType('pre').children[0], /new-user/);
+  assert.doesNotMatch(view.root.findByType('pre').children[0], /old-user/);
   await act(async () => view.unmount());
 });

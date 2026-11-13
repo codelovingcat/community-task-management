@@ -7,6 +7,7 @@ export function usePortalSession() {
   useEffect(() => {
     let active = true;
     let generation = 0;
+    const request = generation;
     // No DB/network calls from the auth callback. A later event wins over the
     // initial lookup, so sign-out/account switches cannot resurrect old data.
     const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
@@ -14,7 +15,6 @@ export function usePortalSession() {
       generation++;
       setState({ user: session?.user ?? null, loading: false, error: false });
     });
-    const request = generation;
     void client.auth.getSession().then(({ data, error }) => {
       if (active && request === generation) setState({ user: data.session?.user ?? null, loading: false, error: !!error });
     }).catch(() => {

@@ -25,7 +25,7 @@ function fixture() {
   }).outputText;
   const dependencies = { react: React, 'react/jsx-runtime': require('react/jsx-runtime'),
     '../lib/supabase': { supabase: { auth } },
-    '../lib/supabaseMembers': { getMemberByEmail: (email) => { const result = deferred(); requests.push({ email, ...result }); return result.promise; } } };
+    '../lib/supabaseMembers': { getCurrentMember: (...args) => { const result = deferred(); assert.equal(args.length, 0); requests.push({ ...result }); return result.promise; } } };
   runInNewContext(code, { exports, setTimeout, console, require: (name) => {
     if (name in dependencies) return dependencies[name]; throw new Error(`Unexpected import: ${name}`);
   } });
@@ -38,7 +38,7 @@ test('account switches discard delayed profiles and defer data calls until after
   const f = fixture(); let view;
   await act(async () => { view = create(React.createElement(f.exports.UserProfileProvider, null, React.createElement(f.Capture))); });
   await act(async () => { assert.equal(f.emit('SIGNED_IN', session('a')), undefined); assert.equal(f.requests.length, 0); await wait(); });
-  assert.equal(f.requests[0].email, 'a@example.invalid');
+  assert.equal(f.requests.length, 1);
   await act(async () => { f.emit('SIGNED_IN', session('b')); await wait(); });
   assert.equal(f.value().profile, null);
   await act(async () => { f.requests[1].resolve({ id: 'member-b' }); await f.requests[1].promise; });

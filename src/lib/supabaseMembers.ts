@@ -608,3 +608,10 @@ export const getRecentMembers = async (limit: number = 5): Promise<RecentMember[
 // END OF CRUD SERVICE
 // ============================================================
 
+
+// Session identity is resolved by the database, never by a caller email.
+export const getCurrentMember = async (): Promise<FullMember | null> => {
+  const { data, error } = await supabase.rpc('get_current_member');
+  if (error) throwError(error);
+  return data;
+};
