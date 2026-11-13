@@ -15,3 +15,4 @@ jobs:
           node-version: 24
       - run: npx --yes supabase migration new --help
       - run: npx --yes supabase migration new private_event_tickets
+      - run: npm view qrcode-generator@2.0.4 dist.integrity --json
