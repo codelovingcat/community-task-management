@@ -26,7 +26,7 @@ export function Profile() {
     return () => { active = false; };
   }, [retry]);
   if (state === 'loading') return <p role="status">Bilgileriniz yükleniyor…</p>;
-  if (state === 'unregistered') return <section className="card"><h1>Üyeliğiniz henüz eşleştirilmemiş</h1><p>Topluluk yöneticinizle iletişime geçin.</p></section>;
+  if (state === 'unregistered') return <section className="card"><h1>Topluluk çalışma alanı</h1><p>Bu bölüm topluluk içi görev alan üyeler içindir. Etkinlik kayıtlarınız katılımcı bölümündedir.</p></section>;
   if (state === 'error' || !data) return <section className="card" role="alert">
     <h1>Bilgileriniz yüklenemedi</h1><p>Tekrar deneyin. Sorun sürerse topluluk yöneticinize bildirin.</p>
     <button onClick={() => setRetry((count) => count + 1)}>Tekrar dene</button>

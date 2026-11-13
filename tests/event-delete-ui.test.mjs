@@ -20,6 +20,7 @@ function loadPage(service) {
     react: React,
     'react/jsx-runtime': require('react/jsx-runtime'),
     'lucide-react': new Proxy({}, { get: () => empty }),
+    '../components/events/PublicRegistrationAdmin': { PublicRegistrationAdmin: empty },
     '../components/events': {
       EventTable: ({ onDelete }) => React.createElement('button', { onClick: () => onDelete('event-1') }, 'Etkinliği sil'),
       EventFormModal: empty,
