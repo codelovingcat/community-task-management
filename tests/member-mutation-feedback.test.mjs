@@ -53,6 +53,7 @@ test('member deletion prevents duplicate clicks, retains dialog on failure, and 
   const dependencies = {
     react: React, 'react/jsx-runtime': require('react/jsx-runtime'),
     'lucide-react': new Proxy({}, { get: () => empty }),
+    './MemberScores': { MemberScores: empty },
     './MemberTable': { MemberTable: ({ onDelete }) => React.createElement('button', { onClick: () => onDelete(member.id) }, 'Üyeyi seç') },
     './MemberModal': { MemberModal: empty }, './DetailModal': { DetailModal: empty },
     '../../lib/supabaseMembers': { getMembers: async () => ({ data: [member] }), deleteMember: () => { attempts++; return attempts === 1 ? pending : Promise.resolve(); } },
