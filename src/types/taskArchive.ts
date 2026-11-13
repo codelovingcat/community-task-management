@@ -14,8 +14,10 @@ export interface ArchivedTask {
   created_at: string;
   updated_at: string;
 
-  // done metadata (copied from tasks.updated_at/status change time)
-  done_completed_at: string;
+  // Legacy timestamp is retained for audit, not completion timing.
+  completed_at: string | null;
+  resource_url: string | null;
+  done_completed_at: string | null;
   done_completed_by: string | null;
   done_completed_by_name?: string | null;
 

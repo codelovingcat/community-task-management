@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { PortalProfile } from './types';
 import { formatTaskDate, isComplete, taskSummary, taskTiming } from './taskTiming';
 import { TaskBadge, TaskList } from './TaskList';
+import { safeResourceUrl } from './resourceUrl';
 
 function safePhoto(value?: string | null) {
   if (!value) return null;
@@ -27,6 +28,7 @@ export function Dashboard({ data, onRefresh }: { data: PortalProfile; onRefresh:
   const selectedId = new URLSearchParams(window.location.search).get('task');
   // A URL identifier only selects from the server-authorized self-profile.
   const selectedTask = data.tasks.find(task => task.id === selectedId);
+  const resource = safeResourceUrl(selectedTask?.resource_url);
   const completeAngle = stats.total ? stats.complete / stats.total * 360 : 0;
   const overdueAngle = stats.total ? stats.overdue / stats.total * 360 : 0;
   const soon = data.tasks.filter(task => ['urgent', 'soon'].includes(taskTiming(task, now).kind)).length;
@@ -39,6 +41,8 @@ export function Dashboard({ data, onRefresh }: { data: PortalProfile; onRefresh:
       <div className="identity"><h2>{data.member.name}</h2><p>{[data.member.job_title, data.member.company].filter(Boolean).join(' · ') || 'Topluluk üyesi'}</p>{data.member.comm_title && <span className="role-label">{data.member.comm_title}</span>}</div>
       <dl className="contact"><div><dt>E-posta</dt><dd>{data.member.email || 'Belirtilmemiş'}</dd></div><div><dt>Telefon</dt><dd>{data.member.phone || 'Belirtilmemiş'}</dd></div></dl>
     </section>
+    {data.member.bio && <section className="card"><h2>Hakkımda</h2><p className="task-description">{data.member.bio}</p></section>}
+    <section className="card" aria-label="Kişisel puanım"><p className="eyebrow">KİŞİSEL PUANIM</p><h2>{data.score ?? 0} puan</h2><p className="small muted">Tamamlanan görevlerin puan toplamı. Arşivlenen işler dahildir; gecikme cezası uygulanmaz. Puanınızı yalnızca siz ve yöneticiler görebilir.</p></section>
     <div className="overview-grid">
       <section className="card progress-card" aria-label="Görev özeti">
         <div><p className="eyebrow">GENEL BAKIŞ</p><h2>Görev yolculuğunuz</h2><p className="muted small">Tamamlananlar ve sırada bekleyenler.</p>
@@ -56,7 +60,7 @@ export function Dashboard({ data, onRefresh }: { data: PortalProfile; onRefresh:
     </div>
     {selectedId && <section className="card detail-card" aria-label="Görev detayı">
       <a href="/" className="small">← Görev listesine dön</a>
-      {selectedTask ? <><h2>{selectedTask.title}</h2><TaskBadge task={selectedTask} now={now} /><p className="task-description">{selectedTask.description || 'Bu görev için açıklama eklenmemiş.'}</p><p className="small muted">Son tarih: {formatTaskDate(selectedTask.deadline)} · İstanbul</p><p className="small muted">Görev değişiklikleri topluluk yöneticiniz tarafından yapılır.</p></>
+      {selectedTask ? <><h2>{selectedTask.title}</h2><TaskBadge task={selectedTask} now={now} /><p className="task-description">{selectedTask.description || 'Bu görev için açıklama eklenmemiş.'}</p><p className="small muted">Son tarih: {formatTaskDate(selectedTask.deadline)} · İstanbul</p>{resource && <p><a className="task-link" href={resource} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">Görev / anket bağlantısını aç ↗</a></p>}<p className="small muted">Görev değişiklikleri topluluk yöneticiniz tarafından yapılır.</p></>
         : <><h2>Görev bulunamadı</h2><p>Bu görev size atanmamış veya artık mevcut değil.</p></>}
     </section>}
     <div className="task-toolbar"><div><p className="eyebrow">GÖREVLERİM</p><h2>Yapılacaklar ve tamamlananlar</h2></div><label className="search-label"><span className="sr-only">Görevlerimde ara</span><input type="search" placeholder="Görevlerimde ara…" value={search} onChange={event => setSearch(event.target.value)} /></label></div>

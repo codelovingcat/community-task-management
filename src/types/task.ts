@@ -28,6 +28,8 @@ export interface FullTask {
   description: string;
   deadline: string | null;
   image_url: string;
+  completed_at?: string | null;
+  resource_url?: string | null;
   points: number;
   assignee_id: string | null;
   status: TaskStatus;
@@ -50,6 +52,7 @@ export interface TaskFormData {
   description?: string;
   deadline?: string | null;
   image_url?: string;
+  resource_url?: string | null;
   points?: number;
   assignee_id?: string | null;
   status?: TaskStatus;
@@ -119,10 +122,8 @@ export const isOverdue = (task: FullTask): boolean => {
  */
 export const isLateCompleted = (task: FullTask): boolean => {
   const completedStatuses: TaskStatus[] = ['completed', 'done'];
-  if (!completedStatuses.includes(task.status) || !task.deadline) return false;
-  
-  // Tamamlanma tarihi (updated_at) bitiş tarihinden sonraysa geç kalmıştır
-  return new Date(task.updated_at) > new Date(task.deadline);
+  if (!completedStatuses.includes(task.status) || !task.deadline || !task.completed_at) return false;
+  return new Date(task.completed_at) > new Date(task.deadline);
 };
 
 export const TASK_DEFAULTS = {

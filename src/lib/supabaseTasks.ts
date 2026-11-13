@@ -178,7 +178,7 @@ export const createTask = async (taskData: TaskFormData): Promise<FullTask> => {
   const { data, error } = await supabase.from('tasks').insert([{
     ...normalizedData,
     status: normalizedData.status || 'backlog',
-    points: normalizedData.points || 1
+    points: normalizedData.points ?? 1
   }]).select().single();
 
   if (error) throwError(error);
@@ -252,7 +252,7 @@ export interface CompletedTask {
   title: string;
   assigneeName: string | null;
   assigneeAvatar: string | null;
-  completedAt: string;
+  completedAt: string | null;
 }
 
 /**
@@ -313,7 +313,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 export const getTaskDistribution = async (): Promise<TaskDistributionItem[]> => {
   const { data: allTasks, error } = await supabase
     .from('tasks')
-    .select('status, deadline, updated_at');
+    .select('status, deadline, completed_at');
   
   if (error) throwError(error);
 
@@ -342,12 +342,12 @@ export const getTaskDistribution = async (): Promise<TaskDistributionItem[]> => 
     },
     { 
       name: 'Geç Tamamlanan', 
-      value: tasks.filter(t => ['completed', 'done'].includes(t.status) && t.updated_at && t.deadline && new Date(t.updated_at) > new Date(t.deadline)).length, 
+      value: tasks.filter(t => ['completed', 'done'].includes(t.status) && t.completed_at && t.deadline && new Date(t.completed_at) > new Date(t.deadline)).length,
       color: '#630303' 
     },
     { 
       name: 'Tamamlanan', 
-      value: tasks.filter(t => ['completed', 'done'].includes(t.status) && (!t.deadline || new Date(t.updated_at) <= new Date(t.deadline))).length, 
+      value: tasks.filter(t => ['completed', 'done'].includes(t.status) && (!t.completed_at || !t.deadline || new Date(t.completed_at) <= new Date(t.deadline))).length,
       color: '#4c9459' 
     },
   ];
@@ -363,7 +363,7 @@ export const getLatestCompletedTasks = async (limit: number = 5): Promise<Comple
     .from('tasks')
     .select('*, members!inner(name, avatar)')
     .in('status', ['completed', 'done'])
-    .order('updated_at', { ascending: false })
+    .order('completed_at', { ascending: false, nullsFirst: false })
     .limit(limit);
 
   // Debug log raw data
@@ -393,7 +393,7 @@ export const getLatestCompletedTasks = async (limit: number = 5): Promise<Comple
       title: task.title,
       assigneeName: memberName,
       assigneeAvatar: memberAvatar,
-      completedAt: task.updated_at,
+      completedAt: task.completed_at ?? null,
     };
   });
 };

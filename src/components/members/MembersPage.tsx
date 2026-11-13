@@ -7,6 +7,7 @@ import {
   Trash2,
   AlertTriangle,
 } from 'lucide-react';
+import { MemberScores } from './MemberScores';
 import { MemberTable } from './MemberTable';
 import { MemberModal } from './MemberModal';
 import { FullMember } from '../../types/member';
@@ -162,6 +163,7 @@ export const MembersPage: React.FC = () => {
 
   return (
     <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <MemberScores />
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

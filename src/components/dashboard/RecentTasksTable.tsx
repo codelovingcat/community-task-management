@@ -6,7 +6,8 @@ interface RecentTasksTableProps {
 }
 
 export const RecentTasksTable: React.FC<RecentTasksTableProps> = ({ tasks }) => {
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return 'Tarih bilinmiyor';
     const date = new Date(dateStr);
     return date.toLocaleDateString('tr-TR', {
       year: 'numeric',
