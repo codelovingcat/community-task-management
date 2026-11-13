@@ -15,6 +15,7 @@ function load(file, deps) {
     if (name === 'react') return React;
     if (name === 'react/jsx-runtime') return require(name);
     if (name in deps) return deps[name];
+    if (name === './Notes') return { Notes: () => null };
     throw new Error(`Unexpected import ${name}`);
   }});
   return exports;
