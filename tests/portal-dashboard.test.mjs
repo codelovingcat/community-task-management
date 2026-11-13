@@ -18,6 +18,7 @@ function modules(search = '', client = {}) {
       if(key==='react')return React;
       if(key==='react/jsx-runtime')return require(key);
       if(key==='./client')return {client};
+      if(key==='./Notes') return {Notes:()=>null};
       return load(key.replace('./',''));
     }}); return exports;
   }

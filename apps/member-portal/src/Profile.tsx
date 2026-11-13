@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { client } from './client';
 import { Dashboard } from './Dashboard';
+import { Notes } from './Notes';
 import type { PortalProfile } from './types';
 
 // Mounted with key=Auth user ID, so account switches discard all prior data.
@@ -30,5 +31,5 @@ export function Profile() {
     <h1>Bilgileriniz yüklenemedi</h1><p>Tekrar deneyin. Sorun sürerse topluluk yöneticinize bildirin.</p>
     <button onClick={() => setRetry((count) => count + 1)}>Tekrar dene</button>
   </section>;
-  return <Dashboard data={data} onRefresh={() => setRetry((count) => count + 1)} />;
+  return <><Dashboard data={data} onRefresh={() => setRetry((count) => count + 1)} /><Notes key={data.member.id} ownerId={data.member.id} /></>;
 }
