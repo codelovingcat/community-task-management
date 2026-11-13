@@ -65,3 +65,26 @@ score/resource-link contracts; #81 private notes; #82 personal link entry;
 #83 external registration; #84 QR tickets; #85 reminder producer; #86 rollout.
 The initial internal welcome excludes the panel link; task emails include it.
 External attendee registration confirmation includes panel/ticket entry.
+
+## Task dashboard (issue #78)
+
+The portal shows profile/contact data and separate active/completed task tables,
+search, eight-row pagination, self-profile-scoped `?task=<id>` detail links,
+counts and a labelled chart. URL identifiers never cause a different member's
+record to be fetched. No edit/delete/complete task actions exist in this app.
+
+Deadline thresholds are rolling durations: yellow at <=72 hours, orange at <=24
+hours, overdue red after the exact deadline. Display uses Europe/Istanbul. Backlog
+is active too. Completed/done are terminal; green/red timing requires actual
+`completed_at`. Missing dates are labelled unknown, never guessed from updated_at.
+The current RPC does not supply completed_at, so historic completion timing stays
+unknown until #80. Current lists come from tasks, not archived_tasks; archive
+history remains part of #80. Scores, external resource URLs and notes are not
+implemented by this dashboard PR. Warning pulse has an explicit off switch and
+respects prefers-reduced-motion. The clock updates once a minute; Refresh fetches
+a fresh profile. This is not a realtime subscription or reminder sender.
+
+Tests use synthetic data and component rendering. Browser smoke was attempted,
+but local Chromium failed creating its process-singleton socket with Operation
+not permitted. Real browser/mobile/keyboard verification remains a release gate
+in #86; no visual QA or live Auth/SQL success is claimed by these fixtures.
