@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { client } from './client';
+import { Dashboard } from './Dashboard';
 import type { PortalProfile } from './types';
 
 // Mounted with key=Auth user ID, so account switches discard all prior data.
@@ -29,5 +30,5 @@ export function Profile() {
     <h1>Bilgileriniz yüklenemedi</h1><p>Tekrar deneyin. Sorun sürerse topluluk yöneticinize bildirin.</p>
     <button onClick={() => setRetry((count) => count + 1)}>Tekrar dene</button>
   </section>;
-  return <section className="card"><p className="eyebrow">PROFİLİM</p><h1>{data.member.name}</h1><p>{data.member.email}</p><p>{data.member.job_title}</p><p className="muted">Size atanan {data.tasks.length} görev bulunuyor.</p></section>;
+  return <Dashboard data={data} onRefresh={() => setRetry((count) => count + 1)} />;
 }
