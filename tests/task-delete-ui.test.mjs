@@ -10,13 +10,14 @@ import ts from 'typescript';
 const require = createRequire(import.meta.url);
 const empty = () => null;
 
-function loadPage(deleteTask) {
+function loadPage(deleteTask, role = 'Admin') {
   const source = readFileSync(new URL('../src/pages/TasksPage.tsx', import.meta.url), 'utf8');
   const compiled = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
   }).outputText;
   const exports = {};
   const dependencies = {
+    '../context/UserProfileContext': { useUserProfile: () => ({ profile: role ? { system_role: role } : null, isLoading: false }) },
     'react': React,
     'react/jsx-runtime': require('react/jsx-runtime'),
     'lucide-react': new Proxy({}, { get: () => empty }),
@@ -64,3 +65,16 @@ test('table deletion requires confirmation, prevents repeats, and shows failures
   assert.ok(findButton('Sil'));
   await act(async () => { view.unmount(); });
 });
+
+for (const role of ['Member', 'Leader', null]) {
+  test(`management task controls are unavailable for ${role}`, async () => {
+    let calls = 0;
+    const Page = loadPage(() => { calls++; }, role);
+    let view;
+    await act(async () => { view = create(React.createElement(Page)); });
+    assert.equal(view.root.findAllByType('button').length, 0);
+    assert.match(JSON.stringify(view.toJSON()), /Kullanıcı paneline git/);
+    assert.equal(calls, 0);
+    await act(async () => view.unmount());
+  });
+}

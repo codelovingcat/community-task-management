@@ -12,7 +12,7 @@ registered members can read the single-community directory and task list but
 cannot mutate another member's task, reassign their own task, or administer the
 organization; and an administrator can manage tasks and departments but cannot
 promote a member to Super Admin. The trusted service role can access the queue.
-Task status updates and allowed self-assignment are also exercised.
+The 20261113191954 migration supersedes the old self-assignment/status-change contract: only Admin and Super Admin may mutate tasks. Tests apply this migration twice, inject a legacy permissive ALL policy, and verify member writes and TRUNCATE remain denied.
 
 The same CI workflow runs `tests/email-delivery-claim-integration.test.mjs`
 against both queue shapes. It applies the actual delivery-claim migration to

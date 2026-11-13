@@ -4,6 +4,7 @@ import { TaskTable } from '../components/tasks/TaskTable';
 import { TaskFormModal } from '../components/tasks/TaskFormModal';
 import { TaskDetailsModal } from '../components/tasks/TaskDetailsModal';
 import { KanbanBoard } from '../components/kanban/KanbanBoard';
+import { useUserProfile } from '../context/UserProfileContext';
 import { FullTask } from '../types/task';
 import { getTasks, deleteTask } from '../lib/supabaseTasks';
 import { ArchivedTaskTable } from '../components/tasks/ArchivedTaskTable';
@@ -12,6 +13,19 @@ import { ArchivedTask } from '../types/taskArchive';
 import { restoreArchivedTaskToDone } from '../lib/supabaseTasksRestore';
 
 export const TasksPage: React.FC = () => {
+  const { profile, isLoading } = useUserProfile();
+  if (isLoading) return <p className="p-8" role="status">Yükleniyor…</p>;
+  if (!profile || !['Admin', 'Super Admin'].includes(profile.system_role)) {
+    return <section className="p-8 text-[var(--text-primary)]">
+      <h1 className="text-2xl font-bold">Görevlerim</h1>
+      <p className="my-4">Görevleri yalnızca yöneticiler değiştirebilir. Size atanan işleri kullanıcı panelinizden takip edebilirsiniz.</p>
+      <a href="/profile" className="underline">Kullanıcı paneline git</a>
+    </section>;
+  }
+  return <TaskManagement />;
+};
+
+const TaskManagement: React.FC = () => {
   const [tasks, setTasks] = useState<FullTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [archivedTasks, setArchivedTasks] = useState<ArchivedTask[]>([]);
