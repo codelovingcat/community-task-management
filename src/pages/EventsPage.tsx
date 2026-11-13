@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Plus, Calendar, LayoutList, Trash2, X } from 'lucide-react';
+import { TicketDesk } from '../components/events/TicketDesk';
 import { PublicRegistrationAdmin } from '../components/events/PublicRegistrationAdmin';
 import { EventTable } from '../components/events';
 import { EventFormModal } from '../components/events';
@@ -130,6 +131,7 @@ export const EventsPage: React.FC = () => {
   return (
     <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <PublicRegistrationAdmin events={events}/>
+      <TicketDesk events={events}/>
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>

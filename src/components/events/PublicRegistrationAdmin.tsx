@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FullEvent } from '../../types/event';
 import { useUserProfile } from '../../context/UserProfileContext';
 import { supabase } from '../../lib/supabase';
+import { TicketQr } from './TicketQr';
 import { memberPortalUrl } from '../../lib/memberPortalUrl';
 type Page={event_id:string;slug:string;title:string;summary:string;location:string;starts_at:string;ends_at:string;registration_closes_at:string;capacity:number;state:string;privacy_url:string;consent_version:string;consent_text:string};
 export function PublicRegistrationAdmin({events}:{events:FullEvent[]}) {
@@ -38,5 +39,5 @@ function PageEditor({event}:{event:FullEvent}) {
   <label>Kontenjan<input className={inputClass} type="number" required min={1} max={100000} value={page.capacity} onChange={e=>setPage({...page,capacity:Number(e.target.value)})}/></label>
   <label>Kayıt durumu<select className={inputClass} value={page.state} onChange={e=>setPage({...page,state:e.target.value})}><option value="draft">Taslak</option><option value="open">Kayıt açık</option><option value="closed">Kayıt kapalı</option><option value="cancelled">Etkinlik iptal</option></select></label>
   <button type="submit" className="rounded bg-ice-500 p-3 text-coal-900">{pending?'Kaydediliyor…':'Yayın ayarlarını kaydet'}</button>
- </fieldset>{message&&<p role="status" className="my-3">{message}</p>}{exists&&base&&<p className="my-3"><a href={base+'register/'+page.slug} target="_blank" rel="noopener noreferrer" className="underline">Kayıt sayfasını aç ↗</a></p>}<p className="text-sm">Yayın bilgileri ayrı tutulur. Ana etkinlik tarihi değişirse bu tarihleri de güncelleyin. Metin değişikliklerinde sürümü artırın.</p></form>;
+ </fieldset>{message&&<p role="status" className="my-3">{message}</p>}{exists&&base&&<div className="my-3"><p>Kayıt QR’ı — katılım formunu açar, giriş bileti değildir.</p><TicketQr value={base+'register/'+page.slug} label="Etkinlik kayıt bağlantısı"/><a href={base+'register/'+page.slug} target="_blank" rel="noopener noreferrer" className="underline">Kayıt sayfasını aç ↗</a></div>}<p className="text-sm">Yayın bilgileri ayrı tutulur. Ana etkinlik tarihi değişirse bu tarihleri de güncelleyin. Metin değişikliklerinde sürümü artırın.</p></form>;
 }

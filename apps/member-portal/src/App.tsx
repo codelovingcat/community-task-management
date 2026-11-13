@@ -5,7 +5,7 @@ import { SignIn } from './SignIn';
 import { Profile } from './Profile';
 import { AuthConfirm } from './AuthConfirm';
 import { Registration } from './Registration';
-import { AttendeePanel } from './AttendeePanel';
+import { Tickets } from './Tickets';
 
 export function App() {
   const { user, loading, error } = usePortalSession();
@@ -30,6 +30,6 @@ export function App() {
       <button onClick={() => void signOut()} disabled={signingOut}>{signingOut ? 'Çıkılıyor…' : 'Çıkış yap'}</button>
     </header>
     {signOutError && <p role="alert" className="error">Çıkış yapılamadı. Tekrar deneyin.</p>}
-    <main id="main" className="portal-main"><AttendeePanel key={'attendee:'+user.id} userId={user.id}/><Profile key={user.id} /></main>
+    <main id="main" className="portal-main"><Tickets key={'tickets:'+user.id}/><Profile key={user.id} /></main>
   </>;
 }
