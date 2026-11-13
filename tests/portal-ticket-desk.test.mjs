@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {runInNewContext} from 'node:vm';
+import React from 'react';
+import {act,create} from 'react-test-renderer';
+import ts from 'typescript';
+import {parseTicketCode} from '../src/lib/ticketCode.ts';
+const require=createRequire(import.meta.url);
+test('ticket desk prevents duplicate admission and requires separate revocation confirmation',async()=>{
+ const calls=[];let resolve;
+ const exports={};const code=ts.transpileModule(readFileSync(new URL('../src/components/events/TicketDesk.tsx',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+ const deps={react:React,'react/jsx-runtime':require('react/jsx-runtime'),'../../context/UserProfileContext':{useUserProfile:()=>({user:{id:'admin-auth'},profile:{system_role:'Admin'}})},'../../lib/supabase':{supabase:{rpc:(name,args)=>{calls.push({name,args});return new Promise(r=>resolve=r);}}},'../../lib/ticketCode':{parseTicketCode}};
+ runInNewContext(code,{exports,require:k=>deps[k]});let view;await act(async()=>{view=create(React.createElement(exports.TicketDesk,{events:[{id:'event',title:'Meetup'}]}));});
+ await act(async()=>view.root.findByType('select').props.onChange({target:{value:'event'}}));
+ const button=label=>view.root.findAllByType('button').find(b=>b.children.includes(label));
+ await act(async()=>view.root.findByType('input').props.onChange({target:{value:'ctm-ticket:v1:a0000000-0000-4000-8000-000000000001'}}));
+ await act(async()=>{view.root.findByType('form').props.onSubmit({preventDefault(){}});view.root.findByType('form').props.onSubmit({preventDefault(){}});});
+ assert.equal(calls.length,1);assert.equal(calls[0].args.p_expected_user_id,'admin-auth');
+ await act(async()=>resolve({data:{status:'already_checked_in',name:'Guest'},error:null}));assert.match(JSON.stringify(view.toJSON()),/daha önce kullanılmış/);
+ await act(async()=>button('Bileti iptal et').props.onClick());assert.equal(calls.length,1);
+ await act(async()=>button('Vazgeç').props.onClick());assert.equal(calls.length,1);
+ await act(async()=>button('Bileti iptal et').props.onClick());await act(async()=>button('Evet, bileti iptal et').props.onClick());assert.equal(calls[1].name,'revoke_event_ticket');
+ await act(async()=>resolve({data:null,error:{message:'denied'}}));assert.match(JSON.stringify(view.toJSON()),/İşlem yapılamadı/);
+ await act(async()=>view.unmount());
+});
