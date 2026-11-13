@@ -3,6 +3,7 @@ import { client } from './client';
 import { usePortalSession } from './usePortalSession';
 import { SignIn } from './SignIn';
 import { Profile } from './Profile';
+import { AuthConfirm } from './AuthConfirm';
 
 export function App() {
   const { user, loading, error } = usePortalSession();
@@ -16,6 +17,7 @@ export function App() {
     } catch { setSignOutError(true); }
     finally { setSigningOut(false); }
   }
+  if (window.location.pathname === '/auth/confirm') return <AuthConfirm />;
   if (loading) return <main className="portal-login" role="status">Oturum kontrol ediliyor…</main>;
   if (!user) return <>{error && <p role="alert">Oturum alınamadı. Lütfen yeniden giriş yapın.</p>}<SignIn /></>;
   return <>
