@@ -21,7 +21,7 @@ export function TaskList({ title, tasks, now, empty }: { title: string; tasks: P
       <table><caption className="sr-only">{title} · Tarihler İstanbul saatine göredir.</caption>
         <thead><tr><th scope="col">Görev</th><th scope="col">Son tarih</th><th scope="col">Durum</th><th scope="col"><span className="sr-only">Detay</span></th></tr></thead>
         <tbody>{visible.map(task => <tr key={task.id}>
-          <th scope="row"><a className="task-title" href={`?task=${encodeURIComponent(task.id)}`}>{task.title}</a>
+          <th scope="row"><a className="task-title" href={`?task=${encodeURIComponent(task.id)}`}>{task.title}</a>{task.archived && <span className="small muted"> · Arşiv</span>}
             {task.description && <p className="task-excerpt">{task.description.slice(0, 95)}{task.description.length > 95 ? '…' : ''}</p>}
           </th>
           <td className="date-cell">{formatTaskDate(task.deadline)}</td>

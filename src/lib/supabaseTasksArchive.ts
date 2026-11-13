@@ -32,7 +32,7 @@ export const getArchivedTasks = async (params?: {
     .select(
       `
       id, title, description, deadline, image_url, points, assignee_id, status,
-      created_at, updated_at,
+      created_at, updated_at, completed_at, resource_url,
       done_completed_at, done_completed_by,
       archived_at, archived_reason,
       assignee:members(name, avatar, comm_title),
@@ -62,7 +62,9 @@ export const getArchivedTasks = async (params?: {
     status: t.status,
     created_at: t.created_at,
     updated_at: t.updated_at,
-    done_completed_at: t.done_completed_at,
+    completed_at: t.completed_at,
+    resource_url: t.resource_url,
+    done_completed_at: t.completed_at,
     done_completed_by: t.done_completed_by,
     archived_at: t.archived_at,
     archived_reason: t.archived_reason,

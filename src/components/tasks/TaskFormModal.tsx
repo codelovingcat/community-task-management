@@ -34,6 +34,7 @@ const descriptionRef = useRef<HTMLTextAreaElement>(null);
     description: '',
     deadline: '',
     image_url: '',
+      resource_url: '',
     points: 1,
     assignee_id: '',
     status: 'backlog'
@@ -54,6 +55,7 @@ const [members, setMembers] = useState<FullMember[]>([]);
           description: task.description || '',
           deadline: task.deadline || '',
           image_url: task.image_url || '',
+          resource_url: task.resource_url || '',
           points: task.points,
           assignee_id: task.assignee_id || '',
           status: task.status
@@ -101,6 +103,7 @@ const fetchMembers = async () => {
       description: '',
       deadline: '',
       image_url: '',
+      resource_url: '',
       points: 1,
       assignee_id: '',
       status: 'backlog'
@@ -115,10 +118,12 @@ const fetchMembers = async () => {
     // Fix UUID error: convert empty string to null
     const cleanedData = {
       ...formData,
+      resource_url: formData.resource_url?.trim() || null,
       assignee_id: formData.assignee_id === '' ? null : formData.assignee_id
     };
 
     try {
+      if (cleanedData.resource_url && !/^https:\/\/[^\s@\\]+$/i.test(cleanedData.resource_url)) throw new Error('Görev bağlantısı geçerli bir HTTPS adresi olmalı');
       if (task) {
         await updateTask(task.id, cleanedData);
       } else {
@@ -186,6 +191,9 @@ const fetchMembers = async () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+          <label className="block text-silver-200">Görev / anket bağlantısı (HTTPS)
+            <input type="url" maxLength={2048} value={formData.resource_url || ''} onChange={e => setFormData({...formData, resource_url: e.target.value})} placeholder="https://…" className="mt-2 w-full rounded-xl bg-coal-800 p-3" />
+          </label>
           {error && (
             <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
@@ -285,7 +293,7 @@ const fetchMembers = async () => {
                 min="1"
                 max="100"
                 value={formData.points}
-                onChange={(e) => setFormData({...formData, points: parseInt(e.target.value) || 1})}
+                onChange={(e) => setFormData({...formData, points: Number(e.target.value)})}
                 className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-silver-100 text-sm focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 transition-all"
               />
             </div>

@@ -11,7 +11,7 @@ function modules(search = '', client = {}) {
   const cache = {};
   function load(name) {
     if (cache[name]) return cache[name];
-    const extension = ['taskTiming', 'usePortalSession'].includes(name) ? 'ts' : 'tsx';
+    const extension = ['taskTiming', 'usePortalSession', 'resourceUrl'].includes(name) ? 'ts' : 'tsx';
     const code = ts.transpileModule(readFileSync(new URL(`../apps/member-portal/src/${name}.${extension}`, import.meta.url),'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
     const exports = {}; cache[name]=exports;
     runInNewContext(code,{exports, console, Date, URL, URLSearchParams, Intl, setInterval,clearInterval,setTimeout,clearTimeout, window:{location:{search}}, require:key=>{

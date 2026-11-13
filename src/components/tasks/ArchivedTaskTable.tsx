@@ -50,7 +50,7 @@ export const ArchivedTaskTable: React.FC<ArchivedTaskTableProps> = ({
     // keep page reset possible in future
   }, [searchQuery]);
 
-  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('tr-TR');
+  const formatDate = (dateStr: string | null) => dateStr ? new Date(dateStr).toLocaleDateString('tr-TR') : 'Tarih bilinmiyor';
 
   if (loading) {
     return (
@@ -159,7 +159,7 @@ export const ArchivedTaskTable: React.FC<ArchivedTaskTableProps> = ({
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="text-xs text-silver-300">{formatDate(task.done_completed_at)}</span>
+                      <span className="text-xs text-silver-300">{formatDate(task.completed_at)}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="text-xs text-silver-300">
