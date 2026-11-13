@@ -6,10 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint src api",
+    "lint": "eslint src api apps/member-portal/src",
     "typecheck": "tsc --noEmit",
     "test:notifications": "node --import tsx --test tests/notification-state.test.mjs tests/notification-center.test.tsx",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:portal": "vite --config apps/member-portal/vite.config.ts",
+    "build:portal": "vite build --config apps/member-portal/vite.config.ts",
+    "typecheck:portal": "tsc --noEmit -p apps/member-portal/tsconfig.json",
+    "test:portal": "node --import tsx --test tests/portal-*.test.*"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

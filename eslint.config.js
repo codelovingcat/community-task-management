@@ -6,7 +6,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 export default [
   { ignores: ['dist/**', 'node_modules/**', 'email-worker/**'] },
   {
-    files: ['src/**/*.{js,jsx,ts,tsx}', 'api/**/*.js'],
+    files: ['src/**/*.{js,jsx,ts,tsx}', 'api/**/*.js', 'apps/member-portal/src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks, '@typescript-eslint': tseslint.plugin },
     linterOptions: { reportUnusedDisableDirectives: 'off' },
     languageOptions: { parser: tseslint.parser, ecmaVersion: 'latest', sourceType: 'module', parserOptions: { ecmaFeatures: { jsx: true } } },

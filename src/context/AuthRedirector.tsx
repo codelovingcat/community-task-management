@@ -22,8 +22,9 @@ export const AuthRedirector: React.FC = () => {
 
     const isAuthed = !!user && !!profile;
     const isOnLogin = location.pathname === '/';
+    const isPortalEntry = location.pathname === '/profile' || location.pathname.startsWith('/profile/');
 
-    if (!isAuthed && !isOnLogin) {
+    if (!isAuthed && !isOnLogin && !isPortalEntry) {
       redirectingRef.current = true;
       // route'u temizlemeden sadece redirect etmek yeterli
       navigate('/', { replace: true });
