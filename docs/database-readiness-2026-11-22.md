@@ -1,6 +1,6 @@
 # Task Manager readiness and member CRUD (#4)
 
-## Verified facts
+## Audit before rollout
 
 - Fork main is `ac80e5b049722e60719de41a4e397a8d36a25265`; #94–#96 merged.
 - Task Manager database project is `vbokappwelyrvoxnkigp`. Its migration history
@@ -35,13 +35,13 @@ It covers private community/notification grants, profile/identity, admin-only ta
 writes, completion/scores, private notes, public registration and tickets.
 It does not include email claims, templates, birthday producer or worker upgrades.
 
-The exact list is tested against the full legacy schema, with an existing verified
-Admin preserved and linked by migration. It is a reviewed candidate, **not applied**.
-Automatic approval review rejected the attempted seven-table policy migration as
-an unauthorized production access-control change. Explicit approval is required
-before applying this broader, enumerated candidate; review backup/recovery and
-fresh target drift first. Do not rerun baseline SQL, repair history blindly, change
-provider configuration or enable sending as part of this rollout.
+The exact list was tested against the full legacy schema, then explicitly approved
+by the user and applied on 2026-11-22. All sixteen schema checks and seven privacy
+gates now pass. Hosted member CRUD and rollback passed; all three real members
+remain. See [production evidence](production-database-rollout-2026-11-22.md).
+The prior automatic approval rejection was resolved by the user's explicit approval.
+Do not rerun the baseline or these non-idempotent migrations, repair history blindly,
+or enable provider sending. Vercel/real-session checks remain outstanding.
 
 ## Verification and completion gate
 
@@ -52,7 +52,8 @@ ROLLBACK discards the synthetic member, jobs and notifications. CI also executes
 this SQL on PostgreSQL 17. No real mail is sent. SQL-role impersonation in an
 isolated test does not prove hosted JWT verification or PostgREST behavior.
 
-After approved migration rollout and correct preview deployment, run both schema
+The migration rollout and database-role smoke checks are complete. After correct
+preview deployment, recheck both schema
 and private-community audit queries, then verify real admin/member/external sessions
 and CRUD in the preview connected to the intended project. The rollback SQL can
 be used by an authorized database operator after inspecting target triggers for

@@ -18,14 +18,10 @@ continue covering all seven tables, denied writes and hostile legacy policies.
 
 ## Hosted rollout status
 
-**Not applied.** Automatic approval review rejected the live policy replacement
-because it changes the production authorization boundary and could disrupt access.
-No workaround was attempted. User approval is required for this exact migration
-on Task Manager project `vbokappwelyrvoxnkigp` before applying it.
-
-After approval, apply that reviewed migration once, then run
-`supabase/audits/private_community_release_gate.sql` and the detailed companion
-audit. Every gate row must be ready; review policy expressions and real sessions
-as well. A passing catalog gate is necessary, not sufficient proof of behavior.
-Revalidate an active Super Admin and external/member sessions. Keep #3 open until
-the hosted checks pass; merging source alone does not complete rollout.
+**Applied and database-verified on 2026-11-22 after explicit user approval.**
+All seven catalog gates pass. Hosted SQL-role checks confirmed Admin settings create/update
+and profile RPCs, denied external-account reads/writes, and denied anonymous reads.
+The synthetic member/settings/queue fixtures were rolled back; real members remain.
+See [deployment evidence](production-database-rollout-2026-11-22.md) for actual
+migration versions and boundaries. #3's database rollout is complete; real browser,
+Auth-provider and portal deployment verification remains #4/#86.
