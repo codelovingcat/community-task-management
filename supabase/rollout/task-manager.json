@@ -1,0 +1,51 @@
+{
+  "project_id": "vbokappwelyrvoxnkigp",
+  "reviewed_source_commit": "ac80e5b049722e60719de41a4e397a8d36a25265",
+  "status": "awaiting_explicit_production_approval",
+  "migrations": [
+    {
+      "file": "20261103000000_restrict_member_helper_execution.sql",
+      "sha256": "f4151980defea6edd58a259e72659ba6af02a524879eba00bd0864482c38bdb7"
+    },
+    {
+      "file": "20261111150204_restrict_private_community_reads.sql",
+      "sha256": "67bef79fa932132615a859e57c794f77eacf3aa5b3ab5d8e4e61d8fd9ecd53a4"
+    },
+    {
+      "file": "20261111172605_authenticated_self_profile.sql",
+      "sha256": "8b7cb1e1ff623f4e0d45c53dac7d2534a3cb0f06f2c1d0d04d6e7f5fd83c1307"
+    },
+    {
+      "file": "20261111195910_restrict_notification_table_privileges.sql",
+      "sha256": "4f489d4ae3f556d592e731ffffec52f80c7be9fa44af08ca03b49a54b593ac48"
+    },
+    {
+      "file": "20261112185658_restrict_core_non_rls_privileges.sql",
+      "sha256": "d367273ca084e93e0643d359282d18852777472673ec9eceac5b2c5c9cf11dd4"
+    },
+    {
+      "file": "20261113191954_admin_only_task_mutations.sql",
+      "sha256": "fb781a81f57817735754df6a31cd147edbbd92464f4ff0a926db7de4e36128d8"
+    },
+    {
+      "file": "20261113200143_portal_identity_privacy.sql",
+      "sha256": "f8fe7301faab50e407242106722c7fba7c7a2dc232a138e6667334e6c358abce"
+    },
+    {
+      "file": "20261113200634_task_completion_scores.sql",
+      "sha256": "280c922792f5833e309f3242eef5bc0ec00706e5d0f4bf1fde730aca6a65257d"
+    },
+    {
+      "file": "20261113201104_member_private_notes.sql",
+      "sha256": "dc3a59d07747bb467acfe5542b154fad0979555f9a587e68f84eda18e3033dfd"
+    },
+    {
+      "file": "20261113204406_public_event_registration.sql",
+      "sha256": "bedc73bbbde8ce2133a720129d21041fbe4d5b65417165c60ee3ee2e341df927"
+    },
+    {
+      "file": "20261113205457_private_event_tickets.sql",
+      "sha256": "b114058ff88c965aefbf4bc18e376f58bbc41bce66b649fd2db957fa6ccc0fb0"
+    }
+  ]
+}

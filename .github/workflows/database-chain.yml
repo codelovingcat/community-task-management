@@ -33,9 +33,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node --test tests/database-baseline.test.mjs
+      - run: node --test tests/member-full-schema.test.mjs
       - name: Fresh PostgreSQL install using production SQL
         run: |
           psql -X -v ON_ERROR_STOP=1 -f tests/helpers/supabase-auth.sql
           node scripts/database-plan.mjs --fresh > /tmp/community-fresh.sql
           psql -X -v ON_ERROR_STOP=1 -f /tmp/community-fresh.sql
           psql -X -v ON_ERROR_STOP=1 -c "select public.current_member_id(), count(*) from public.members;"
+          psql -X -v ON_ERROR_STOP=1 -f tests/helpers/admin-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f supabase/tests/member_crud_rollback.sql
