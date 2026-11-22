@@ -1,0 +1,41 @@
+name: Database clean install and upgrade
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  complete-schema:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: disposable-ci-only
+          POSTGRES_DB: community_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: disposable-ci-only
+      PGDATABASE: community_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/database-baseline.test.mjs
+      - name: Fresh PostgreSQL install using production SQL
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -f tests/helpers/supabase-auth.sql
+          node scripts/database-plan.mjs --fresh > /tmp/community-fresh.sql
+          psql -X -v ON_ERROR_STOP=1 -f /tmp/community-fresh.sql
+          psql -X -v ON_ERROR_STOP=1 -c "select public.current_member_id(), count(*) from public.members;"

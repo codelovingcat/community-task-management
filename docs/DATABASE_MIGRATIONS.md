@@ -1,74 +1,81 @@
 # Database migrations and historical SQL
 
-## Current limitation
+## Fresh installation and upgrades
 
-**An empty Supabase database cannot currently be built from this repository.**
-The versioned migrations start with changes to existing tables, including
-`birthday_notifications`, `email_queue` and `email_settings`; there is no
-complete, reviewed base schema, and this repository has no `supabase/config.toml`.
-A sorted list of migration files is not a fresh-install recipe. The migrations
-have not been verified as a complete chain against a clean Supabase project.
-Issue [#14](https://github.com/codelovingcat/community-task-management/issues/14)
-remains open until that baseline and its clean-install test exist.
+`supabase/bootstrap/schema.sql` is the reviewed schema-only compatibility snapshot
+of the existing application through the October migrations. It contains tables,
+enums, sequences, constraints, indexes, functions, triggers, RLS and grants, but
+no users, members, event data, provider credentials or jobs. `reference-data.sql`
+adds disabled template references and `enabled=false`; installing the application
+does not enable email delivery. Templates must be configured before enabling mail.
 
-The legacy files in `database/` are not a substitute for the missing baseline.
-They contain overlapping definitions, conflicting security policies and resets;
-there is no supported order in which to run them all. Some recreate old email
-functions or triggers. The rest of this document inventories them to prevent
-accidental use, not to authorize their execution.
+The supported empty-database recipe (an isolated Supabase project with its Auth
+schema and roles already initialized) is:
 
-## Versioned change order
+```sh
+npm ci
+node scripts/database-plan.mjs --fresh > /tmp/community-fresh.sql
+psql -X -v ON_ERROR_STOP=1 -f /tmp/community-fresh.sql
+```
 
-For an **already compatible** schema, `supabase/migrations/*.sql` contains the
-versioned changes below, in filename order. Inclusion in this list does not
-prove that a file is applied to a particular project or can safely be replayed.
-Several changes replace policies or functions and some depend on coordinated
-worker or frontend releases. Review the whole SQL file and target state first.
+Use the normal protected PostgreSQL connection environment/credential mechanism;
+do not paste credentials into commands or source. The generated SQL runs the
+baseline, reference rows and all later migrations in **one transaction**, then
+records the equivalent local versions in Supabase migration history. Re-running
+it refuses an existing public application schema before changing anything.
+Do not use it on production or run the bootstrap SQL by itself. It is not a reset
+script. `supabase db reset` alone is not supported: the older migration files
+remain in place for existing deployments and expect the baseline tables.
 
-| Version | Change |
+`supabase/bootstrap/manifest.json` freezes the covered files and their SHA-256
+hashes. Later migrations are read in filename order. Historical files are not
+rewritten or replayed: some create policies without DROP and cannot run twice.
+Existing projects must retain their actual migration history and review pending
+SQL individually; this fresh-install recipe does not repair remote history.
+
+The actual project's historical timestamps differ from local filenames. The
+following is the read-only reconciliation, **not** an instruction to mark versions
+applied just because names resemble each other:
+
+| Hosted version | Equivalent local version / snapshot coverage |
 | --- | --- |
-| 20261026000000 | Email backend-only access |
-| 20261026000100 | Core RLS and task counters |
-| 20261026001000 | Trigger function search paths |
-| 20261026002000 | Remaining permissive anonymous policies |
-| 20261026003000 | Public grants on sensitive tables |
-| 20261026004000 | Member, task and organization RLS |
-| 20261026005000 | General and speaker email queue logs |
-| 20261026006000 | Birthday and recipient notification idempotency |
-| 20261026007000 | Delivered birthday email handling |
-| 20261026008000 | Legacy birthday notification backfill |
-| 20261026009000 | Stale birthday notification cancellation |
-| 20261026100000 | Deleted member notification actor foreign key |
-| 20261027200856 | Unassigned organization leaders |
-| 20261103000000 | Member helper execution privileges |
-| 20261104204533 | Email delivery claims |
-| 20261111150204 | Private community reads |
-| 20261111172605 | Authenticated self-profile |
+| 20261025212928 | 20261026000100 core RLS |
+| 20261026193555 | Intermediate authenticated-member hardening, captured by snapshot |
+| 20261026202349 | 20261026000000 email backend-only access |
+| 20261026202447 | 20261026001000 trigger search paths |
+| 20261026202558 | 20261026002000 remaining anonymous policies |
+| 20261026202700 | 20261026003000 public grants |
+| 20261026202807 | 20261026004000 member/task/org RLS |
+| 20261026205209 | 20261026005000 queue logs |
+| 20261026210012 | 20261026006000 birthday deduplication |
+| 20261026210408 | 20261026007000 delivered birthdays |
+| 20261026210546 | 20261026008000 birthday backfill |
+| 20261026210649 | 20261026009000 stale birthday cancellation |
+| 20261026210756 | 20261026100000 deleted notification actor |
+| 20261027200856 | Same local version, unassigned leaders |
 
-A safe workflow for a future change is:
+For upgrades, inspect target policies/functions/grants and pending files, verify
+identity mappings and a working active Super Admin, and keep a recovery backup.
+Generate future migrations using `supabase migration new` after checking CLI
+help. Apply reviewed migrations once in order, then test with real application
+roles. Do not run the bootstrap, historical `database/` files or blindly repair
+history on an existing database. Mail-related upgrades require #26 coordination.
 
-1. Start with a disposable, sanitized Supabase environment whose existing schema
-   and migration history are known. Do not copy production users, personal
-   records, tokens, email jobs or provider keys. The missing clean baseline
-   means an empty environment is not yet sufficient.
-2. Compare the target's migration history and schema with the files, identify
-   the first genuinely pending version, and review prerequisites, policies,
-   grants, data changes and other services affected. Do not repair migration
-   history or mark a migration applied without verifying the actual schema.
-3. With an initialized, isolated Supabase CLI project, generate a new migration
-   using `supabase migration new <descriptive_name>`. Keep the timestamped file
-   under `supabase/migrations/`; never edit a migration already applied in a
-   shared environment. Confirm current CLI syntax with its help/documentation.
-4. Apply and test the pending changes in the disposable environment, including
-   upgrade from the known schema, rerun behavior where intended, role/RLS
-   checks, and relevant frontend and worker behavior. A migration that has
-   already been recorded is ordinarily skipped by the migration runner; this
-   does not imply its SQL can be executed twice directly.
-5. Before any shared-environment deployment, identify the exact target, review
-   schema differences and any environment-specific policies, verify a usable
-   backup/recovery path, and coordinate dependent services. Use the operations
-   guide for service-specific deployment constraints. A Git merge alone does not
-   apply a migration.
+A fresh installation has no administrator. A trusted database operator must
+create the first verified Auth account and corresponding member, using a narrowly
+scoped transaction to disable only `trg_guard_member_role_change` during the first
+Super Admin insert, then immediately re-enable it and call `link_verified_member`
+from a privileged backend. Do this before exposing the application. Browser users
+cannot provision themselves as members or administrators.
+
+## Verification
+
+`node --test tests/database-baseline.test.mjs` runs the complete schema with the
+actual PostgreSQL engine in PGlite, clean-install refusal on rerun, and an upgrade
+that preserves an existing synthetic member. CI repeats fresh installation on
+PostgreSQL 17 with a minimal Auth test fixture. The fixture is test-only; it is
+not a replacement for Supabase Auth and does not validate hosted JWT/PostgREST.
+Actual Auth, SMTP and deployment checks remain #86 and #26.
 
 ## Historical `database/` inventory
 
@@ -114,8 +121,6 @@ preserve existing values, and the reference access block removes its known
 anonymous policies and grants on rerun. They do not test a complete Supabase
 schema, deployed RLS, Auth, migration order, or actual email delivery.
 
-Completing #14 still requires a reviewed schema baseline (including extensions,
-roles, tables, functions, triggers, grants and RLS), reconciliation with real
-migration histories, and automated clean-install plus upgrade tests against a
-disposable Supabase/PostgreSQL environment. Until then, do not advertise a
-fresh database reset as supported.
+The fresh-install chain and snapshot upgrade are tested automatically. Hosted
+migration application and real Auth/browser verification remain separate rollout
+steps; a git merge does not apply SQL.
