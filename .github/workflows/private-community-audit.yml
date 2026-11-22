@@ -20,3 +20,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node --test tests/private-community-audit.test.mjs
+      - run: node --test tests/private-community-full-schema.test.mjs
