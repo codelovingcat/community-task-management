@@ -1,0 +1,19 @@
+{
+  "snapshot_date": "2026-11-22",
+  "through": "20261027200856",
+  "covered": {
+    "20261026000000_email_backend_only_access.sql": "cf2c33868c0f3a5f170304313f3eca47e7e181d2fad519decb05b72de7a0dc3a",
+    "20261026000100_harden_core_rls_and_task_counters.sql": "e5be7e3c6e68f13725ad1f95efc1026b9b9fb4ec8e9b2187603e47817a67edc0",
+    "20261026001000_pin_trigger_function_search_paths.sql": "512205960af7ed4b0ee62577cc8b20d4bf586a67713cd9536a1639039a3a9b22",
+    "20261026002000_remove_remaining_permissive_anon_policies.sql": "8e3bf68148e53416ca87d60c8614a197168c54e695e8d57f8c78bc29a282189b",
+    "20261026003000_revoke_public_table_grants_for_sensitive_tables.sql": "fc28f487464cf8d77e6bc72e32c748efb892cec219828db0a1a483c612fdd505",
+    "20261026004000_lock_down_member_task_org_rls.sql": "b5d83314c2c77715f1a3951e06fd07032d95d340ed5843262c8f8fa358e5a0e9",
+    "20261026005000_support_general_and_speaker_email_queue_logs.sql": "e8133010427551a5d43883d7c16a2bde1b604748b391893df5bf9b36c2e06734",
+    "20261026006000_idempotent_birthday_and_recipient_notifications.sql": "37bef9104c51a909ca8e9e3b84702621c5ec8300c4a0b76d916e9139114c440f",
+    "20261026007000_avoid_resending_delivered_birthday_mail.sql": "cc0101d1b811d6a25aa436b9b06fea1a854b7be94cc7e5cecba5b9edcb65bc82",
+    "20261026008000_backfill_legacy_birthday_notifications.sql": "1c00ca51d3831a977a8463befcb851c3925c3ee4f28bb151a60228026ea07319",
+    "20261026009000_cancel_stale_birthday_notifications_on_date_change.sql": "0ab8ec70ffdeac771901bb85d1effe58a721dc99222fb0185043dff638192574",
+    "20261026100000_fix_deleted_member_notification_actor_fk.sql": "a3c86736166cb1ba0ac9d2b9794871188c07f42437f9e80e7f46e3a1eb8256fd",
+    "20261027200856_allow_unassigned_organization_leaders.sql": "bac78acc70f091ef867be10d3eb9f7613404abceceef1b724ad922866ee65b71"
+  }
+}
